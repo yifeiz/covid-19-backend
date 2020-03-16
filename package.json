@@ -1,0 +1,29 @@
+{
+  "name": "covid-19-backend",
+  "version": "1.0.0",
+  "description": "backend for covid-19 application",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yifei7zhang/covid-19-backend.git"
+  },
+  "author": "Yifei Zhang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yifei7zhang/covid-19-backend/issues"
+  },
+  "homepage": "https://github.com/yifei7zhang/covid-19-backend#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
+    "mongodb": "^3.5.5",
+    "uuid": "^7.0.2"
+  }
+}
