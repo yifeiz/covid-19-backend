@@ -4,7 +4,8 @@
   "description": "backend for covid-19 application",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "nodemons src/index.js"
   },
   "repository": {
     "type": "git",
