@@ -10,7 +10,7 @@ const MongoClient = require("mongodb").MongoClient;
 
 require("dotenv").config();
 
-const cloud = true;
+const cloud = false;
 
 const url = cloud
   ? `mongodb+srv://admin:${process.env.DBPASSWORD}@covid-19-09okh.mongodb.net/test?retryWrites=true&w=majority`
