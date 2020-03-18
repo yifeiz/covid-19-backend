@@ -38,9 +38,35 @@ app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(express.json());
 
+app.use(cookieParser('82e4e438a0705fabf61f9854e3b575af'))
+
 app.get("/", (req, res) => {
-  res.status(200).send("Setup");
-  console.log("hello");
+  // console.log("Cookies: ", req.cookies)
+  // console.log("Signed Cookies: ", req.signedCookies)
+
+  // const options = {
+  //   httpOnly: true,
+  //   signed: true,
+  // };
+
+  // res.cookie("name", "value", options);
+
+  MongoClient.connect(url, function(err, db){
+    if (err) throw err;
+    var dbo = db.db("users")
+    var cookieInfo = req.cookies
+    dbo.collection("patients").insertOne(cookieInfo, function(err, res) {
+      if (err) throw err;
+      console.log("1 document inserted");
+      db.close();
+    });
+  })
+
+  res.status(200).send("success");
+});
+
+app.get("/clear-cookie", (req, res) => {
+  res.send("In Progress")
 });
 
 app.listen(port, () => {
