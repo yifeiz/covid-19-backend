@@ -1,12 +1,14 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 80;
+const port = 3000;
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const basicAuth = require("express-basic-auth");
 const cookieParser = require("cookie-parser");
 const uuidv4 = require("uuid/v4");
 const MongoClient = require("mongodb").MongoClient;
+
+const flattenMatrix = require("./flattenMatrix/matrix.js");
 
 require("dotenv").config();
 
@@ -38,11 +40,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.status(200).send("Setup");
-  console.log("hello");
+app.post("/submit", (req, res) => {
+  const threatScore = flattenMatrix.getScoreFromAnswers(req.body.answers);
+
+  const responseJson = {
+    score: threatScore
+  };
+
+  if (threatScore) {
+    res.status(200).json(responseJson);
+  } else {
+    res.status(400).send(`Invalid Answer: ${threatScore}`);
+  }
 });
 
 app.listen(port, () => {
-  console.log("listening on port " + port + ".");
+  console.log(`listening on port ${port}.`);
 });

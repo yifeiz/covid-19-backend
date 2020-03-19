@@ -1,0 +1,54 @@
+{
+    "4": [
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. If you develop symptoms, please re-take this assessment."]
+    ],
+    "1": [
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. Continue to monitor your health and stay home for 14 days."]
+    ],
+    "3": [
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. Continue to monitor your health and stay home for at least 7 days. If you are still experiencing any symptoms, you should stay home for another 2 days after your symptoms fully resolve."]
+    ],
+    "2": [
+        ["p", "Shortness of breath may indicate a severe illness, so please proceed to your nearest emergency department. Please advise them you may have COVID-19."]
+    ],
+    "5": [
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. You need to self-isolate for 14 days. Instructions can be found at the link below. If you develop symptoms, please use the self-assessment tool again."]
+    ],
+    "6": [
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. If your symptoms change or worsen, please use the self-assessment tool again."],
+    ],
+    "7": [
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. You need to self-isolate for at least 7 days. If you are still experiencing any symptoms, you should stay home for another 2 days after your symptoms fully resolve. Instructions can be found at the link below. If your symptoms change or worsen, please use the self-assessment tool again."]
+    ],
+    "hospitals": [
+        ["p", "Please contact your primary care provider or Telehealth Ontario 1-866-797-0000 and let them know you have completed this assessment."],
+        ["p", "If you do not have access to a family doctor or nurse practitioner and cannot get through to a nurse via Telehealth Ontario, you are encouraged to make your way to an assessment center. Please put on a mask if you have one. Location options can be found below."],
+        ["p", "Local assessment center options can be found below. Please check individual testing websites for information on hours of operation and pre-test requirements."],
+        ["l", 
+            [
+                ["a", "Humber River Hospital", "https://www.hrh.ca/covid-19/"],
+                ["a", "Mackenzie Health in Richmond Hill", "https://www.mackenziehealth.ca/Modules/News/index.aspx?feedId=14b664f2-e8ac-4b9d-8244-04d1b47d3f95,0dd022c2-8647-4d23-b3d5-842f55903b86&newsId=03ca2a19-a322-464d-a613-2d033f7689ef"],
+                ["a", "Michael Garron Hospital in Toronto", "https://www.tehn.ca/about-us/newsroom/michael-garron-hospital-opens-covid-19-assessment-centre-expand-screening-and"],
+                ["a", "North York General Hospital", "https://www.nygh.on.ca/"],
+                ["a", "Scarborough Health Network — Birchmount Hospital", "https://www.shn.ca/covid-19-assessment-centres/"],
+                ["a", "South Lake Regional Health Centre", "https://southlake.ca/news/coronavirus-2019-ncov/"],
+                ["a", "Trillium Health Partners in Mississauga", "https://twitter.com/THP_hospital/status/1238532994161414149"],
+                ["a", "Unity Health – St. Josephs Health Centre", "https://unityhealth.to/patients-and-families/coronavirus-information-for-patients-and-families/"],
+                ["a", "Unity Health – St. Michael’s Hospital", "https://unityhealth.to/patients-and-families/coronavirus-information-for-patients-and-families/"],
+                ["a", "William Osler Health System — Peel Memorial in Brampton", "https://twitter.com/OslerHealth/status/1237834877761970179"],
+                ["a", "Women's College Hospital", "https://www.womenscollegehospital.ca/patients-and-caregivers/wch-covid-19-assessment-centre"]
+            ]
+        ]
+    ],
+    "recomendations": [
+        ["p", "We also recommend:"],
+        ["l", 
+            [
+                ["p", "Wash your hands often with soap and water for at least 20 seconds, or use hand sanitizer if soap and water are not available (hand sanitizer must be at least 60% alcohol)"],
+                ["p", "Avoid touching your eyes, nose, or mouth with unwashed hands"],
+                ["p", "Avoid close contact with people who are sick"],
+                ["p", "Avoid all non-essential travel."]
+            ]
+        ]
+    ]
+}
