@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 80;
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const basicAuth = require("express-basic-auth");
@@ -41,17 +41,23 @@ app.use(bodyParser.raw());
 app.use(express.json());
 
 app.post("/submit", (req, res) => {
-  const threatScore = flattenMatrix.getScoreFromAnswers(req.body.answers);
+  const answers = req.body.answers;
 
-  const responseJson = {
-    score: threatScore
-  };
+  if (answers && typeof answers === "string") {
+    const threatScore = flattenMatrix.getScoreFromAnswers(req.body.answers);
 
-  if (threatScore) {
-    res.status(200).json(responseJson);
-  } else {
-    res.status(400).send(`Invalid Answer: ${threatScore}`);
+    if (threatScore) {
+      const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
+      const responseJson = {
+        score: threatScore,
+        response: matrixResponse
+      };
+
+      res.status(200).json(responseJson);
+    }
   }
+
+  throw new Error("Invalid Request");
 });
 
 app.listen(port, () => {

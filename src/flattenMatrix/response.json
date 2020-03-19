@@ -15,7 +15,7 @@
         ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. You need to self-isolate for 14 days. Instructions can be found at the link below. If you develop symptoms, please use the self-assessment tool again."]
     ],
     "6": [
-        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. If your symptoms change or worsen, please use the self-assessment tool again."],
+        ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. If your symptoms change or worsen, please use the self-assessment tool again."]
     ],
     "7": [
         ["p", "Based on this assessment, there is currently no need to go to an assessment centre or emergency department. You will not be tested for COVID-19. You need to self-isolate for at least 7 days. If you are still experiencing any symptoms, you should stay home for another 2 days after your symptoms fully resolve. Instructions can be found at the link below. If your symptoms change or worsen, please use the self-assessment tool again."]
@@ -40,7 +40,7 @@
             ]
         ]
     ],
-    "recomendations": [
+    "recommendations": [
         ["p", "We also recommend:"],
         ["l", 
             [

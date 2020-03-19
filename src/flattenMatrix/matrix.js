@@ -65,6 +65,34 @@ const matrix = {
     "1n2n4n5n6n7n": 4,
 };
 
+const responses = require("./response.json");
+
+exports.getResponseFromScore = score => {
+    const response = responses[score];
+
+    switch(score) {
+        case 1:
+            return response.concat([].push(...responses.hospitals, ...responses.recommendations));
+        case 2:
+            return response;
+        case 3:
+            return response.concat([].push(...responses.hospitals, ...responses.recommendations));
+        case 4:
+            return response;
+        case 5:
+            return response.concat(responses.recommendations);
+        case 6:
+            return response.concat(responses.recommendations);
+        case 7:
+            return response.concat(responses.recommendations);
+    }
+    throw new Error(`${score} is not a valid score.`);
+}
+
 exports.getScoreFromAnswers = answers => {
-    return matrix[answers];
+    if (answers.indexOf("3y") !== -1) {
+        return 2;
+    }
+
+    return matrix[answers.replace("3n", "")];
 };
