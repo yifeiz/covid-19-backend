@@ -79,17 +79,19 @@ app.get("/read-cookie", (req, res) => {
 app.get("/clear-cookie", (req, res) => {
   res.clearCookie("userCookieValue").send("success");
 });
+
 app.get("/postalInfo", (req,res) => {
+  const postalKey = "postalCode"
   postal_map = {}
   patients.find({}).toArray(function(err, result){
     if(err) throw err;
     result.forEach(element =>{
-      if("postal_code" in element){
-        if(element["postal_code"] in postal_map){
-          postal_map[element["postal_code"]]++;
+      if(postalKey in element){
+        if(element[postalKey] in postal_map){
+          postal_map[element[postalKey]]++;
         }
         else{
-          postal_map[element["postal_code"]] = 1;
+          postal_map[element[postalKey]] = 1;
         }
       }
       else{
@@ -97,8 +99,6 @@ app.get("/postalInfo", (req,res) => {
         console.log(element)
       }
     })
-    console.log(result);
-    console.log(postal_map);
     res.send(postal_map);
   });
 });
