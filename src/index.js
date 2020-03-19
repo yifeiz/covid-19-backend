@@ -16,7 +16,6 @@ const cloud = process.env.CLOUDDB;
 const url = cloud
   ? `mongodb+srv://admin:${process.env.DBPASSWORD}@covid-19-09okh.mongodb.net/test?retryWrites=true&w=majority`
   : "mongodb://127.0.0.1:27017";
-
 var db, collection, users;
 
 const dbName = "covid-19";
@@ -29,7 +28,6 @@ MongoClient.connect(
 
     db = client.db(dbName);
     patients = db.collection("patients");
-
     console.log(`Connected MongoDB: ${url}`);
   }
 );
@@ -49,7 +47,6 @@ app.get("/", (req, res) => {
   let clientIp = {
     clientIp: requestIp.getClientIp(req)
   };
-
   console.log(clientIp["clientIp"]);
 
   // set signed cookie configurations
@@ -81,6 +78,29 @@ app.get("/read-cookie", (req, res) => {
 //clears cookie
 app.get("/clear-cookie", (req, res) => {
   res.clearCookie("userCookieValue").send("success");
+});
+app.get("/postalInfo", (req,res) => {
+  postal_map = {}
+  patients.find({}).toArray(function(err, result){
+    if(err) throw err;
+    result.forEach(element =>{
+      if("postal_code" in element){
+        if(element["postal_code"] in postal_map){
+          postal_map[element["postal_code"]]++;
+        }
+        else{
+          postal_map[element["postal_code"]] = 1;
+        }
+      }
+      else{
+        console.log("ERROR: There exists an element with an invalid postal code:");
+        console.log(element)
+      }
+    })
+    console.log(result);
+    console.log(postal_map);
+    res.send(postal_map);
+  });
 });
 
 app.listen(port, () => {
