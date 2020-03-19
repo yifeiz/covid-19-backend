@@ -6,11 +6,12 @@ const bodyParser = require("body-parser");
 const basicAuth = require("express-basic-auth");
 const cookieParser = require("cookie-parser");
 const uuidv4 = require("uuid/v4");
+const requestIp = require("request-ip");
 const MongoClient = require("mongodb").MongoClient;
 
 require("dotenv").config();
 
-const cloud = false;
+const cloud = true;
 
 const url = cloud
   ? `mongodb+srv://admin:${process.env.DBPASSWORD}@covid-19-09okh.mongodb.net/test?retryWrites=true&w=majority`
@@ -27,6 +28,7 @@ MongoClient.connect(
     if (err) return console.log(err);
 
     db = client.db(dbName);
+    patients = db.collection("patients");
 
     console.log(`Connected MongoDB: ${url}`);
   }
@@ -38,35 +40,47 @@ app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(express.json());
 
-app.use(cookieParser('82e4e438a0705fabf61f9854e3b575af'))
+// uid generator
+app.use(cookieParser(uuidv4()));
 
+// creates a cookie and saves IP address into DB
 app.get("/", (req, res) => {
-  // console.log("Cookies: ", req.cookies)
-  // console.log("Signed Cookies: ", req.signedCookies)
+  // get client ip address
+  let clientIp = {
+    clientIp: requestIp.getClientIp(req)
+  };
 
-  // const options = {
-  //   httpOnly: true,
-  //   signed: true,
-  // };
+  console.log(clientIp["clientIp"]);
 
-  // res.cookie("name", "value", options);
+  // set signed cookie configurations
+  const options = {
+    httpOnly: true,
+    signed: true
+  };
 
-  MongoClient.connect(url, function(err, db){
-    if (err) throw err;
-    var dbo = db.db("users")
-    var cookieInfo = req.cookies
-    dbo.collection("patients").insertOne(cookieInfo, function(err, res) {
-      if (err) throw err;
-      console.log("1 document inserted");
-      db.close();
-    });
-  })
+  res.cookie("userCookieValue", uuidv4(), options);
 
-  res.status(200).send("success");
+  // insert ip into db
+  patients.insertOne(clientIp, function(err, res) {
+    if (err) {
+      res.status(400).json(err);
+    }
+    console.log("Patient IP inserted!");
+  });
+
+  res.send("success");
 });
 
+// determines if a cookie already exists
+app.get("/read-cookie", (req, res) => {
+  let exists;
+  req.signedCookies.userCookieValue ? (exists = true) : (exists = false);
+  res.send({ exists: exists });
+});
+
+//clears cookie
 app.get("/clear-cookie", (req, res) => {
-  res.send("In Progress")
+  res.clearCookie("userCookieValue").send("success");
 });
 
 app.listen(port, () => {
