@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 80;
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const basicAuth = require("express-basic-auth");
@@ -12,7 +11,7 @@ const MongoClient = require("mongodb").MongoClient;
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 
 require("dotenv").config();
-
+const port = process.env.PORT || 80;
 const cloud = process.env.CLOUDDB;
 
 const url = cloud
@@ -48,11 +47,11 @@ app.post("/submit", (req, res) => {
 
   if (threatScore) {
     const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
+    
     const responseJson = {
       score: threatScore,
       response: matrixResponse
     };
-
     res.status(200).json(responseJson);
   } else {
     throw new Error("Invalid Response");
