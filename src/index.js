@@ -44,23 +44,20 @@ app.use(express.json());
 
 // submit endpoint
 app.post("/submit", (req, res) => {
-  const answers = req.body.answers;
+  const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
 
-  if (answers && typeof answers === "string") {
-    const threatScore = flattenMatrix.getScoreFromAnswers(req.body.answers);
+  if (threatScore) {
+    const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
+    const responseJson = {
+      score: threatScore,
+      response: matrixResponse
+    };
 
-    if (threatScore) {
-      const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
-      const responseJson = {
-        score: threatScore,
-        response: matrixResponse
-      };
-
-      res.status(200).json(responseJson);
-    }
+    res.status(200).json(responseJson);
+  } else {
+    throw new Error("Invalid Response");
   }
-
-  throw new Error("Invalid Request");
+});
 
 // uid generator
 app.use(cookieParser(uuidv4()));

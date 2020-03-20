@@ -89,10 +89,11 @@ exports.getResponseFromScore = score => {
     throw new Error(`${score} is not a valid score.`);
 }
 
-exports.getScoreFromAnswers = answers => {
-    if (answers.indexOf("3y") !== -1) {
+exports.getScoreFromAnswers = ans => {
+    if (ans.q3 === "y") {
         return 2;
     }
 
-    return matrix[answers.replace("3n", "")];
+    const encodedAnswers = `1${ans.q1}2${ans.q2}4${ans.q4}5${ans.q5}6${ans.q6}7${ans.q7}`;
+    return matrix[encodedAnswers];
 };
