@@ -6,34 +6,30 @@ const basicAuth = require("express-basic-auth");
 const cookieParser = require("cookie-parser");
 const uuidv4 = require("uuid/v4");
 const requestIp = require("request-ip");
-const MongoClient = require("mongodb").MongoClient;
+//const MongoClient = require("mongodb").MongoClient;
+const {Datastore} = require('@google-cloud/datastore');
+
+const datastore = new Datastore();
 
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 
-require("dotenv").config();
-const port = process.env.PORT || 80;
-const cloud = process.env.CLOUDDB;
 
-const url = cloud
-  ? `mongodb+srv://admin:${process.env.DBPASSWORD}@covid-19-09okh.mongodb.net/test?retryWrites=true&w=majority`
-  : "mongodb://127.0.0.1:27017";
+// Basic datastore insert and query examples from the docs.
+// For more, see https://cloud.google.com/appengine/docs/standard/nodejs/using-cloud-datastore
+const insertTestForms = testForms => {
+  return datastore.save({
+    key: datastore.key('test-forms'),
+    data: testForms,
+  });
+};
+const getTestForms = () => {
+  const query = datastore
+      .createQuery('test-forms')
+      .order('timestamp', {descending: true})
+      .limit(10);
 
-var db, collection, users;
-
-const dbName = "covid-19";
-
-MongoClient.connect(
-  url,
-  { useNewUrlParser: true, useUnifiedTopology: true },
-  (err, client) => {
-    if (err) return console.log(err);
-
-    db = client.db(dbName);
-    patients = db.collection("patients");
-
-    console.log(`Connected MongoDB: ${url}`);
-  }
-);
+  return datastore.runQuery(query);
+};
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -78,13 +74,10 @@ app.get("/", (req, res) => {
 
   res.cookie("userCookieValue", uuidv4(), options);
 
-  // insert ip into db
-  patients.insertOne(clientIp, function(err, res) {
-    if (err) {
-      res.status(400).json(err);
-    }
-    console.log("Patient IP inserted!");
-  });
+  const form = {
+    ip_addr: clientIp["clientIp"]
+  };
+  insertTestForms(form).catch(function(error) {console.log(error)});
 
   res.send("success");
 });
