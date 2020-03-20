@@ -4,14 +4,16 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const basicAuth = require("express-basic-auth");
 const cookieParser = require("cookie-parser");
-const uuidv4 = require("uuid/v4");
+const { v4: uuidv4 } = require('uuid');
 const requestIp = require("request-ip");
-//const MongoClient = require("mongodb").MongoClient;
 const {Datastore} = require('@google-cloud/datastore');
 
 const datastore = new Datastore();
 
 const flattenMatrix = require("./flattenMatrix/matrix.js");
+
+require("dotenv").config();
+const port = process.env.PORT || 80;
 
 
 // Basic datastore insert and query examples from the docs.
