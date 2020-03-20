@@ -47,7 +47,7 @@ app.post("/submit", (req, res) => {
 
   if (threatScore) {
     const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
-    
+
     const responseJson = {
       score: threatScore,
       response: matrixResponse
