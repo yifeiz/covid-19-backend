@@ -28,6 +28,7 @@ app.post("/submit", async (req, res) => {
   submission.timestamp = Date.now();
   submission.ip_address = requestIp.getClientIp(req);
 
+  // Check if cookie value already exists; if not, generate a new one
   if (req.signedCookies.userCookieValue) {
     submission.cookie_id = req.signedCookies.userCookieValue;
   } else {
@@ -44,6 +45,7 @@ app.post("/submit", async (req, res) => {
   submission.probable = flattenMatrix.probable(req.body);
   submission.form_responses = { ...req.body, timestamp: submission.timestamp };
 
+  // inserts/updates entity in dataStore
   await googleData.insertForm(submission);
 
   if (threatScore) {
