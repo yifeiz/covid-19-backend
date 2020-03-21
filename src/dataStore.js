@@ -3,7 +3,9 @@ const { Datastore } = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
 exports.insertForm = async submission => {
-  const key = datastore.key(["form-user", submission.cookie_id]);
+  const key = datastore.key(
+      {"path": [process.env.DATASTORE_KIND, submission.cookie_id],
+        "namespace": process.env.DATASTORE_NAMESPACE});
 
   try {
     // Try to insert an object with cookie_id as key. If already submitted, fails
