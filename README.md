@@ -1,6 +1,6 @@
 # COVID-19 Backend
 
-Backend for the covid-19 project
+Backend for the COVID-19 project
 
 ## Prerequisites
 
@@ -10,28 +10,20 @@ We highly recommend that you use nvm to make sure that we are all using the same
 
 Installation link can be found here for
 
-- [Unix/linux](https://github.com/nvm-sh/nvm)
+- [Unix/Linux](https://github.com/nvm-sh/nvm)
 - [Windows](https://github.com/coreybutler/nvm-windows)
 
 If you'd like to avoid the above package managers, you can install node [here](https://nodejs.org/en/download/releases/), and make sure to select node versions above 10.18.1 (Latest version should be fine)
 
-After making sure you have node and npm on your system, you can run 'npm start' in the root directory to start the project.
+## Setting up Google Cloud
 
-### Installing local Mongo
+Firstly you will need to set up the [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstarts) for the flatten project.
 
-Highly encourage everyone to use a local mongo db. There is a sandbox mongodb in the cloud (mongodb atlas), but for any local testing, please use a local db. Installation steps found [here](https://docs.mongodb.com/manual/administration/install-community/).
+To test locally, you will need to set up a service account key. Obtain a JSON key, and run `export GOOGLE_APPLICATION_CREDENTIALS="[PATH]"`.
 
-### .env
+## Running
 
-You might notice that the current index.js base is using some tags with 'process.env.PORT', or 'process.env.DBPASSWORD'. DO NOT commit .env ever; this may contain sensitive information, so keep that local. Your .env file might look like something below:
-
-```
-PORT = 8080
-DBPASSWORD = "AStrongPassword"
-CLOUDDB = false
-```
-
-Note: by default, this project is going to be using port 80, which potentially is not allowed depending on your user permissions. Either run the project under a sudo user, or define a port above 1024 shown above.
+After making sure you have node, npm, and the Cloud SDK set up on your system, you can run `npm install` to get dependencies, and then `npm start` in the root directory to start the project.
 
 ## Additional Tools
 
