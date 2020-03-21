@@ -2,50 +2,53 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const basicAuth = require("express-basic-auth");
 const cookieParser = require("cookie-parser");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const requestIp = require("request-ip");
-const {Datastore} = require('@google-cloud/datastore');
-
-const datastore = new Datastore();
 
 const flattenMatrix = require("./flattenMatrix/matrix.js");
+const googleData = require("./dataStore");
 
 require("dotenv").config();
 const port = process.env.PORT || 80;
-
-
-// Basic datastore insert and query examples from the docs.
-// For more, see https://cloud.google.com/appengine/docs/standard/nodejs/using-cloud-datastore
-const insertTestForms = testForms => {
-  return datastore.save({
-    key: datastore.key('test-forms'),
-    data: testForms,
-  });
-};
-const getTestForms = () => {
-  const query = datastore
-      .createQuery('test-forms')
-      .order('timestamp', {descending: true})
-      .limit(10);
-
-  return datastore.runQuery(query);
-};
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(express.json());
+// Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
+app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 
 // submit endpoint
-app.post("/submit", (req, res) => {
+app.post("/submit", async (req, res) => {
   const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
+
+  let submission = {};
+  submission.timestamp = Date.now();
+  submission.ip_address = requestIp.getClientIp(req);
+
+  if (req.signedCookies.userCookieValue) {
+    submission.cookie_id = req.signedCookies.userCookieValue;
+  } else {
+    submission.cookie_id = uuidv4();
+    const cookie_options = {
+      httpOnly: true,
+      signed: true
+    };
+
+    res.cookie("userCookieValue", submission.cookie_id, cookie_options);
+  }
+
+  submission.at_risk = flattenMatrix.atRisk(req.body);
+  submission.probable = flattenMatrix.probable(req.body);
+  submission.form_responses = { ...req.body, timestamp: submission.timestamp };
+
+  await googleData.insertForm(submission);
 
   if (threatScore) {
     const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
-    
+
     const responseJson = {
       score: threatScore,
       response: matrixResponse
@@ -56,43 +59,16 @@ app.post("/submit", (req, res) => {
   }
 });
 
-// uid generator
-app.use(cookieParser(uuidv4()));
-
-// creates a cookie and saves IP address into DB
-app.get("/", (req, res) => {
-  // get client ip address
-  let clientIp = {
-    clientIp: requestIp.getClientIp(req)
-  };
-
-  console.log(clientIp["clientIp"]);
-
-  // set signed cookie configurations
-  const options = {
-    httpOnly: true,
-    signed: true
-  };
-
-  res.cookie("userCookieValue", uuidv4(), options);
-
-  const form = {
-    ip_addr: clientIp["clientIp"]
-  };
-  insertTestForms(form).catch(function(error) {console.log(error)});
-
-  res.send("success");
-});
-
 // determines if a cookie already exists
 app.get("/read-cookie", (req, res) => {
   let exists;
-  req.signedCookies.userCookieValue ? (exists = true) : (exists = false);
-  res.send({ exists: exists });
+  console.log(req.signedCookies.userCookieValue);
+  exists = req.signedCookies.userCookieValue ? true : false;
+  res.send({ exists });
 });
 
 //clears cookie
-app.get("/clear-cookie", (req, res) => {
+app.delete("/clear-cookie", (req, res) => {
   res.clearCookie("userCookieValue").send("success");
 });
 
