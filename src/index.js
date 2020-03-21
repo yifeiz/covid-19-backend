@@ -10,7 +10,7 @@ const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
 require("dotenv").config();
-const port = process.env.PORT || 80;
+const port = parseInt(process.env.PORT, 10) || 80;
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
