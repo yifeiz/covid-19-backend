@@ -1,0 +1,5 @@
+service: development
+runtime: nodejs10
+env_variables: # test
+  DATASTORE_NAMESPACE: "flatten_test"
+  DATASTORE_KIND: "form-user"

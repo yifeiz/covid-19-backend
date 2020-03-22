@@ -10,7 +10,7 @@ const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
 require("dotenv").config();
-const port = parseInt(process.env.PORT, 10) || 80;
+const port = process.env.PORT || 80;
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -72,6 +72,10 @@ app.get("/read-cookie", (req, res) => {
 //clears cookie
 app.delete("/clear-cookie", (req, res) => {
   res.clearCookie("userCookieValue").send("success");
+});
+
+app.get("/", (req, res) => {
+  res.status(200).send("COVID-19 Backend Online");
 });
 
 app.listen(port, () => {
