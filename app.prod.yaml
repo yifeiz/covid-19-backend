@@ -1,0 +1,6 @@
+service: production
+runtime: nodejs10
+env_variables: # production
+  DATASTORE_NAMESPACE: "flatten_production"
+  DATASTORE_KIND: "form-user"
+  BACKEND_BRANCH: "prod"
