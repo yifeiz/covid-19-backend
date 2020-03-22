@@ -36,7 +36,8 @@ app.post("/submit", async (req, res) => {
     const cookie_options = {
       httpOnly: true,
       signed: true,
-      domain: "flatten.ca"
+      domain: ".flatten.ca",
+      secure: true
     };
 
     res.cookie("userCookieValue", submission.cookie_id, cookie_options);
