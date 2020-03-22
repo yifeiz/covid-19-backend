@@ -5,7 +5,10 @@ const cors = require("cors");
 const port = process.env.PORT || 80;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const api = require("./api");
+const { v4: uuidv4 } = require("uuid");
+const requestIp = require("request-ip");
+const flattenMatrix = require("./flattenMatrix/matrix.js");
+const googleData = require("./dataStore");
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,8 +18,6 @@ app.use(express.json());
 
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
-// Routers
-app.use("/api", api);
 
 // submit endpoint
 app.post("/submit", async (req, res) => {
@@ -71,6 +72,10 @@ app.get("/read-cookie", (req, res) => {
 //clears cookie
 app.delete("/clear-cookie", (req, res) => {
   res.clearCookie("userCookieValue").send("success");
+});
+
+app.get("/", (req, res) => {
+  res.status(200).send(`COVID-19 ${process.env.BACKEND_BRANCH} Backend Online`);
 });
 
 // submit endpoint
