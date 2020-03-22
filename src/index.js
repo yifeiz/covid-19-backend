@@ -11,10 +11,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(express.json());
-// Routers
-app.use("/api", api);
+
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
+// Routers
+app.use("/api", api);
 
 const port = process.env.PORT || 80;
 
