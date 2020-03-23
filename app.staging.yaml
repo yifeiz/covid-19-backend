@@ -1,11 +1,6 @@
 service: backend-staging
 runtime: nodejs10
-env: flex
 env_variables: # test
   DATASTORE_NAMESPACE: "flatten_staging"
   DATASTORE_KIND: "form-user"
   BACKEND_BRANCH: "STAGING"
-network:
-  instance_tag: backend-source
-  name: flatten-staging-backend
-  subnetwork_name: flatten-staging-backend
