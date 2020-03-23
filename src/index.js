@@ -64,7 +64,7 @@ app.post("/submit", async (req, res) => {
       httpOnly: true,
       signed: true,
       domain: "flatten.ca",
-      secure: true,
+      secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 365 * 2 //maxAge is ms thus this is 2 years
     };
 
