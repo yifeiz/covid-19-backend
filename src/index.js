@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const { v4: uuidv4 } = require("uuid");
 const requestIp = require("request-ip");
+const axios = require("axios");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
@@ -33,7 +34,22 @@ app.use((req, res, next) => {
 
 // submit endpoint
 app.post("/submit", async (req, res) => {
-  const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
+  // const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
+
+  console.log(req.body);
+
+  const SECRET_KEY = "6LfuVOIUAAAAAFWii1XMYDcGVjeXUrahVaHMxz26";
+
+  const response = await axios.post(
+    `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${req.body.reactVerification}`
+  );
+
+  console.log(response);
+
+  if (!response.data.success) {
+    res.status(400).send("error, invalid recaptcha");
+    return;
+  }
 
   let submission = {};
   submission.timestamp = Date.now();
