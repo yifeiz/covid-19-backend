@@ -37,7 +37,7 @@ app.post("/submit", async (req, res) => {
       signed: true,
       domain: "flatten.ca",
       secure: true,
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 2, //maxAge is ms thus this is 2 years
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 2 //maxAge is ms thus this is 2 years
     };
 
     res.cookie("userCookieValue", submission.cookie_id, cookie_options);
@@ -78,7 +78,7 @@ app.delete("/clear-cookie", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.status(200).send(`COVID-19 ${process.env.BACKEND_BRANCH} Backend Online`);
+  res.status(200).send(`COVID-19 ${process.env.BACKEND_BRANCH} BACKEND ONLINE`);
 });
 
 // submit endpoint
