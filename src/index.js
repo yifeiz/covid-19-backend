@@ -10,7 +10,7 @@ const requestIp = require("request-ip");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: "https://flatten.ca", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
