@@ -107,18 +107,15 @@ exports.probable = ans => {
     if (ans.q2 === "y") {
       return true;
     }
-    if (ans.q5 === "y") {
-      return true;
-    }
     if (ans.q6 === "y") {
       return true;
     }
   }
-  if (ans.q2 === "y") {
-    if (ans.q5 === "y") {
+  if (ans.q6 === "y") {
+    if (ans.q2 === "y") {
       return true;
     }
-    if (ans.q6 === "y") {
+    if (ans.q3 === "y") {
       return true;
     }
   }
