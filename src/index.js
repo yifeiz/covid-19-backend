@@ -11,7 +11,7 @@ const axios = require("axios");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
-app.use(cors({ origin: "https://flatten.ca", credentials: true }));
+app.use(cors({ origin: "https://staging.flatten.ca", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   if (
     req.url[0] !== "/" ||
     req.originalUrl[0] !== "/" ||
-    !req.hostname.includes("flatten.ca")
+    !req.hostname.includes("staging.flatten.ca")
   ) {
     res.status(404).send("Error");
   } else {
@@ -63,6 +63,7 @@ app.post("/submit", async (req, res) => {
     const cookie_options = {
       httpOnly: true,
       signed: true,
+      domain: "staging.flatten.ca",
       secure: true,
       maxAge: 1000 * 60 * 60 * 24 * 365 * 2 //maxAge is ms thus this is 2 years
     };
