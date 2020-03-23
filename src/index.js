@@ -47,18 +47,19 @@ app.post("/submit", async (req, res) => {
 
   // inserts/updates entity in dataStore
   await googleData.insertForm(submission);
+  res.status(200).send("submissions recorded");
 
-  if (threatScore) {
-    const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
+  // if (threatScore) {
+  //   const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
 
-    const responseJson = {
-      score: threatScore,
-      response: matrixResponse
-    };
-    res.status(200).json(responseJson);
-  } else {
-    throw new Error("Invalid Response");
-  }
+  //   const responseJson = {
+  //     score: threatScore,
+  //     response: matrixResponse
+  //   };
+  //   res.status(200).json(responseJson);
+  // } else {
+  //   throw new Error("Invalid Response");
+  // }
 });
 
 // determines if a cookie already exists
