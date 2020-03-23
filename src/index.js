@@ -7,10 +7,11 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const { v4: uuidv4 } = require("uuid");
 const requestIp = require("request-ip");
+const axios = require("axios");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: "https://flatten.ca", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
@@ -19,9 +20,36 @@ app.use(express.json());
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 
+app.use((req, res, next) => {
+  if (
+    req.url[0] !== "/" ||
+    req.originalUrl[0] !== "/" ||
+    !req.hostname.includes("flatten.ca")
+  ) {
+    res.status(404).send("Error");
+  } else {
+    next();
+  }
+});
+
 // submit endpoint
 app.post("/submit", async (req, res) => {
-  const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
+  // const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
+
+  console.log(req.body);
+
+  const SECRET_KEY = "6LfuVOIUAAAAAFWii1XMYDcGVjeXUrahVaHMxz26";
+
+  const response = await axios.post(
+    `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${req.body.reactVerification}`
+  );
+
+  console.log(response);
+
+  if (!response.data.success) {
+    res.status(400).send("error, invalid recaptcha");
+    return;
+  }
 
   let submission = {};
   submission.timestamp = Date.now();
