@@ -19,6 +19,18 @@ app.use(express.json());
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 
+app.use((req, res, next) => {
+  if (
+    req.url[0] !== "/" ||
+    req.originalUrl[0] !== "/" ||
+    !req.hostname.includes("flatten.ca")
+  ) {
+    res.status(404).send("Error");
+  } else {
+    next();
+  }
+});
+
 // submit endpoint
 app.post("/submit", async (req, res) => {
   const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
@@ -37,7 +49,7 @@ app.post("/submit", async (req, res) => {
       signed: true,
       domain: "flatten.ca",
       secure: true,
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 2, //maxAge is ms thus this is 2 years
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 2 //maxAge is ms thus this is 2 years
     };
 
     res.cookie("userCookieValue", submission.cookie_id, cookie_options);
