@@ -11,7 +11,8 @@ const axios = require("axios");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
-app.use(cors({ origin: "https://staging.flatten.ca", credentials: true }));
+app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
+// app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
@@ -19,18 +20,6 @@ app.use(express.json());
 
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
-
-app.use((req, res, next) => {
-  if (
-    req.url[0] !== "/" ||
-    req.originalUrl[0] !== "/" ||
-    !req.hostname.includes("staging.flatten.ca")
-  ) {
-    res.status(404).send("Error");
-  } else {
-    next();
-  }
-});
 
 // submit endpoint
 app.post("/submit", async (req, res) => {
@@ -63,7 +52,7 @@ app.post("/submit", async (req, res) => {
     const cookie_options = {
       httpOnly: true,
       signed: true,
-      domain: "staging.flatten.ca",
+      domain: process.env.DOMAIN,
       secure: true,
       maxAge: 1000 * 60 * 60 * 24 * 365 * 2 //maxAge is ms thus this is 2 years
     };
@@ -76,20 +65,9 @@ app.post("/submit", async (req, res) => {
   submission.form_responses = { ...req.body, timestamp: submission.timestamp };
 
   // inserts/updates entity in dataStore
-  await googleData.insertForm(submission);
-  res.status(200).send("submissions recorded");
-
-  // if (threatScore) {
-  //   const matrixResponse = flattenMatrix.getResponseFromScore(threatScore);
-
-  //   const responseJson = {
-  //     score: threatScore,
-  //     response: matrixResponse
-  //   };
-  //   res.status(200).json(responseJson);
-  // } else {
-  //   throw new Error("Invalid Response");
-  // }
+  // await googleData.insertForm(submission);
+  const data = { submitSuccess: true };
+  res.status(200).json(data);
 });
 
 // determines if a cookie already exists

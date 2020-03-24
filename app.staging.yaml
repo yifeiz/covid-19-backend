@@ -4,3 +4,4 @@ env_variables: # test
   DATASTORE_NAMESPACE: "flatten_staging"
   DATASTORE_KIND: "form-user"
   BACKEND_BRANCH: "STAGING"
+  DOMAIN: "staging.flatten.ca"
