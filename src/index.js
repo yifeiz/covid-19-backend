@@ -65,7 +65,7 @@ app.post("/submit", async (req, res) => {
   submission.form_responses = { ...req.body, timestamp: submission.timestamp };
 
   // inserts/updates entity in dataStore
-  // await googleData.insertForm(submission);
+  await googleData.insertForm(submission);
   const data = { submitSuccess: true };
   res.status(200).json(data);
 });
