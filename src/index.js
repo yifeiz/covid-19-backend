@@ -55,14 +55,14 @@ app.post("/submit", async (req, res) => {
     submission.cookie_id = req.signedCookies.userCookieValue;
   } else {
     submission.cookie_id = uuidv4();
-      const submission_cookie_options = {
-        domain: process.env.DOMAIN,
-        httpOnly: true,
-        maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
-        secure: true,
-        signed: true,
-      };
-      res.cookie("userCookieValue", submission.cookie_id, submission_cookie_options);
+    const submission_cookie_options = {
+      domain: process.env.DOMAIN,
+      httpOnly: true,
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
+      secure: true,
+      signed: true,
+    };
+    res.cookie("userCookieValue", submission.cookie_id, submission_cookie_options);
   }
 
   // inserts/updates entity in dataStore
