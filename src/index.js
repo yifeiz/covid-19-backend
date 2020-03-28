@@ -29,7 +29,7 @@ app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 app.post("/submit", async (req, res) => {
   const SECRET_KEY = "6LfuVOIUAAAAAFWii1XMYDcGVjeXUrahVaHMxz26";
 
-  const recaptchaResponse = await axios.post(
+  /*const recaptchaResponse = await axios.post(
     `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${req.body.reactVerification}`
   );
 
@@ -37,6 +37,13 @@ app.post("/submit", async (req, res) => {
     res.status(400).send("error, invalid recaptcha");
     return;
   }
+  */
+
+  const form_response_fields = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'postalCode'];
+  const form_responses = form_response_fields.reduce((obj, field) => ({ 
+    ...obj, 
+    [field]: req.body[field]
+  }), {});
 
   const timestamp = Date.now()
   const submission = {
@@ -45,7 +52,7 @@ app.post("/submit", async (req, res) => {
     at_risk: flattenMatrix.atRisk(req.body),
     probable: flattenMatrix.probable(req.body),
     form_responses: {
-      ...req.body,
+      ...form_responses,
       timestamp
     }
   };
@@ -66,7 +73,8 @@ app.post("/submit", async (req, res) => {
   }
 
   // inserts/updates entity in dataStore
-  await googleData.insertForm(submission);
+  console.log(submission);
+  // await googleData.insertForm(submission);
   const data = { submitSuccess: true };
   res.status(200).json(data);
 });
