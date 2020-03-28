@@ -93,8 +93,9 @@ app.post("/submit", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
+  //Include google token field and cookies to req body
+
   //Google Sign-In Token Verification
-  //Add google token field to req body
   const client = new OAuth2Client(CLIENT_ID);
   let userID = null;
   console.log(`Google IDToken: ${req.body.token}`);
@@ -115,13 +116,12 @@ app.post("/login", async (req, res) => {
   console.log(`Google UserID: ${userID}`);
   //End Token Verification
 
-  //If cookie exists there is a form associated w it
+  //If cookie exists there may be a form associated w it
   const cookie_id = req.signedCookies.userCookieValue;
   if (cookie_id) {
     //Need to associate it w the googleUserID instead and delete the old one
+    await googleData.migrateCookieForm(userID, cookie_id);
   }
-  await googleData.migrateCookieForm(userID, cookie_id);
-
   const data = { loginSuccess: true };
   res.status(200).json(data);
 });

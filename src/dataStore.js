@@ -36,12 +36,13 @@ exports.insertForm = async submission => {
 
 //Migrates form submitted with cookie as a key to use google userID as a key
 exports.migrateCookieForm = async (userID, cookie_id) => {
+  console.log("Migrating Form");
   const cookieKey = datastore.key({
     path: [process.env.DATASTORE_KIND, cookie_id],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
-  const userIDKey = datastore.key({
+  const key = datastore.key({
     path: [process.env.USERID_DATASTORE_KIND, userID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
@@ -52,24 +53,25 @@ exports.migrateCookieForm = async (userID, cookie_id) => {
     // No cookieKey form exists;
     return;
   }
+
   data.cookie_id = [data.cookie_id]; // New array of all cookies
 
   try {
     // Try to insert an object with userId as key. If already submitted, fails
     const entity = {
-      userIDKey,
+      key,
       data
     };
     await datastore.insert(entity);
   } catch (e) {
     // If it already exists, add cookie to the cookies array
-    let updatedData = await datastore.get(userIDKey).data;
+    let [data] = await datastore.get(key);
 
-    updatedData.cookies.push(cookie_id);
+    data.cookie_id.push(cookie_id);
 
     const entity = {
       key,
-      updatedData
+      data
     };
     const response = await datastore.update(entity);
     console.log(response);
