@@ -34,17 +34,29 @@ app.post("/submit", async (req, res) => {
   );
 
   if (!recaptchaResponse.data.success) {
-    res.status(400).send("error, invalid recaptcha");
+    res.status(400).send("Sorry, your recaptcha was invalid.");
     return;
   }
 
-  const form_response_fields = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'postalCode'];
-  const form_responses = form_response_fields.reduce((obj, field) => ({ 
-    ...obj, 
-    [field]: req.body[field]
-  }), {});
+  const form_response_fields = [
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6",
+    "q7",
+    "postalCode"
+  ];
+  const form_responses = form_response_fields.reduce(
+    (obj, field) => ({
+      ...obj,
+      [field]: req.body[field]
+    }),
+    {}
+  );
 
-  const timestamp = Date.now()
+  const timestamp = Date.now();
   const submission = {
     timestamp,
     ip_address: requestIp.getClientIp(req),
@@ -66,15 +78,27 @@ app.post("/submit", async (req, res) => {
       httpOnly: true,
       maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
       secure: true,
-      signed: true,
+      signed: true
     };
-    res.cookie("userCookieValue", submission.cookie_id, submission_cookie_options);
+    res.cookie(
+      "userCookieValue",
+      submission.cookie_id,
+      submission_cookie_options
+    );
   }
 
   // inserts/updates entity in dataStore
-  await googleData.insertForm(submission);
-  const data = { submitSuccess: true };
-  res.status(200).json(data);
+  try {
+    await googleData.insertForm(submission);
+  } catch (e) {
+    res
+      .status(400)
+      .send(
+        "Sorry, an error occured with your form submission. Please refresh the page and try again."
+      );
+    return;
+  }
+  res.status(200).send(true);
 });
 
 // determines if a cookie already exists
