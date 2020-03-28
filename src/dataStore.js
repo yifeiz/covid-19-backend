@@ -4,12 +4,12 @@ const datastore = new Datastore();
 
 exports.insertForm = async submission => {
   const key = datastore.key({
-    path: [process.env.DATASTORE_KIND, submission.cookie_id],
+    path: [process.env.USERID_DATASTORE_KIND, submission.userID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
   try {
-    // Try to insert an object with cookie_id as key. If already submitted, fails
+    // Try to insert an object with userId as key. If already submitted, fails
     const entity = {
       key,
       data: { ...submission, history: [submission.form_responses] }
@@ -32,4 +32,48 @@ exports.insertForm = async submission => {
     const response = await datastore.update(entity);
     console.log(response);
   }
+};
+
+//Migrates form submitted with cookie as a key to use google userID as a key
+exports.migrateCookieForm = async (userID, cookie_id) => {
+  const cookieKey = datastore.key({
+    path: [process.env.DATASTORE_KIND, cookie_id],
+    namespace: process.env.DATASTORE_NAMESPACE
+  });
+
+  const userIDKey = datastore.key({
+    path: [process.env.USERID_DATASTORE_KIND, userID],
+    namespace: process.env.DATASTORE_NAMESPACE
+  });
+
+  //cookieKey Data
+  const [data] = await datastore.get(cookieKey);
+  if (!data) {
+    // No cookieKey form exists;
+    return;
+  }
+  data.cookie_id = [data.cookie_id]; // New array of all cookies
+
+  try {
+    // Try to insert an object with userId as key. If already submitted, fails
+    const entity = {
+      userIDKey,
+      data
+    };
+    await datastore.insert(entity);
+  } catch (e) {
+    // If it already exists, add cookie to the cookies array
+    let updatedData = await datastore.get(userIDKey).data;
+
+    updatedData.cookies.push(cookie_id);
+
+    const entity = {
+      key,
+      updatedData
+    };
+    const response = await datastore.update(entity);
+    console.log(response);
+  }
+  // Delete old cookieID entry
+  await datastore.delete(cookieKey);
 };
