@@ -1,68 +1,69 @@
 require("dotenv").config();
 const express = require("express");
-const app = express();
 const cors = require("cors");
-const port = process.env.PORT || 80;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const { v4: uuidv4 } = require("uuid");
 const requestIp = require("request-ip");
 const axios = require("axios");
+const helmet = require("helmet");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 
+const port = process.env.PORT || 80;
+const app = express();
+
 app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
-// app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(express.json());
+
+app.use(helmet());
+app.use(helmet.permittedCrossDomainPolicies());
 
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 
 // submit endpoint
 app.post("/submit", async (req, res) => {
-  // const threatScore = flattenMatrix.getScoreFromAnswers(req.body);
-
-  console.log(req.body);
-
   const SECRET_KEY = "6LfuVOIUAAAAAFWii1XMYDcGVjeXUrahVaHMxz26";
 
-  const response = await axios.post(
+  const recaptchaResponse = await axios.post(
     `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${req.body.reactVerification}`
   );
 
-  console.log(response);
-
-  if (!response.data.success) {
+  if (!recaptchaResponse.data.success) {
     res.status(400).send("error, invalid recaptcha");
     return;
   }
 
-  let submission = {};
-  submission.timestamp = Date.now();
-  submission.ip_address = requestIp.getClientIp(req);
+  const timestamp = Date.now()
+  const submission = {
+    timestamp,
+    ip_address: requestIp.getClientIp(req),
+    at_risk: flattenMatrix.atRisk(req.body),
+    probable: flattenMatrix.probable(req.body),
+    form_responses: {
+      ...req.body,
+      timestamp
+    }
+  };
 
   // Check if cookie value already exists; if not, generate a new one
   if (req.signedCookies.userCookieValue) {
     submission.cookie_id = req.signedCookies.userCookieValue;
   } else {
     submission.cookie_id = uuidv4();
-    const cookie_options = {
-      httpOnly: true,
-      signed: true,
+    const submission_cookie_options = {
       domain: process.env.DOMAIN,
+      httpOnly: true,
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
       secure: true,
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 2 //maxAge is ms thus this is 2 years
+      signed: true,
     };
-
-    res.cookie("userCookieValue", submission.cookie_id, cookie_options);
+    res.cookie("userCookieValue", submission.cookie_id, submission_cookie_options);
   }
-
-  submission.at_risk = flattenMatrix.atRisk(req.body);
-  submission.probable = flattenMatrix.probable(req.body);
-  submission.form_responses = { ...req.body, timestamp: submission.timestamp };
 
   // inserts/updates entity in dataStore
   await googleData.insertForm(submission);
@@ -72,13 +73,12 @@ app.post("/submit", async (req, res) => {
 
 // determines if a cookie already exists
 app.get("/read-cookie", (req, res) => {
-  let exists;
   console.log(req.signedCookies.userCookieValue);
-  exists = req.signedCookies.userCookieValue ? true : false;
+  const exists = req.signedCookies.userCookieValue ? true : false;
   res.send({ exists });
 });
 
-//clears cookie
+// clears cookie
 app.delete("/clear-cookie", (req, res) => {
   res.clearCookie("userCookieValue").send("success");
 });
@@ -86,8 +86,6 @@ app.delete("/clear-cookie", (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).send(`COVID-19 ${process.env.BACKEND_BRANCH} BACKEND ONLINE`);
 });
-
-// submit endpoint
 
 app.listen(port, () => {
   console.log(`listening on port ${port}.`);
