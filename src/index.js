@@ -38,6 +38,12 @@ app.post("/submit", async (req, res) => {
     return;
   }
 
+  const form_response_fields = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'postalCode'];
+  const form_responses = form_response_fields.reduce((obj, field) => ({ 
+    ...obj, 
+    [field]: req.body[field]
+  }), {});
+
   const timestamp = Date.now()
   const submission = {
     timestamp,
@@ -45,7 +51,7 @@ app.post("/submit", async (req, res) => {
     at_risk: flattenMatrix.atRisk(req.body),
     probable: flattenMatrix.probable(req.body),
     form_responses: {
-      ...req.body,
+      ...form_responses,
       timestamp
     }
   };
