@@ -82,7 +82,7 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   await datastore.delete(cookieKey);
 };
 
-async function insertMarketingData(email) {
+exports.insertMarketingData = async (email) => {
 
   // sha256 hash of email becomes key
   const hash = crypto.createHash('sha256');
@@ -117,4 +117,4 @@ async function insertMarketingData(email) {
     const response = await datastore.update(entity);
     console.log(response);
   }
-}
+};
