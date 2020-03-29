@@ -3,5 +3,6 @@ runtime: nodejs10
 env_variables: # production
   DATASTORE_NAMESPACE: "flatten_production"
   DATASTORE_KIND: "form-user"
+  DATASTORE_KIND_MARKETING: "marketing"
   BACKEND_BRANCH: "PROD"
   DOMAIN: "flatten.ca"

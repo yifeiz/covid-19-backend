@@ -1,4 +1,6 @@
 const { Datastore } = require("@google-cloud/datastore");
+const crypto = require("crypto");
+const moment = require("moment");
 
 const datastore = new Datastore();
 
@@ -79,3 +81,40 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   // Delete old cookieID entry
   await datastore.delete(cookieKey);
 };
+
+async function insertMarketingData(email) {
+
+  // sha256 hash of email becomes key
+  const hash = crypto.createHash('sha256');
+  hash.update(email);
+  var hashed_email = hash.digest('hex');
+
+  const key = datastore.key({
+    path: [process.env.DATASTORE_KIND_MARKETING, hashed_email],
+    namespace: process.env.DATASTORE_NAMESPACE
+  });
+
+  var timestamp = moment.utc().startOf('day').unix();
+
+  try {
+    // Try to insert an object with hashed email as key. If already submitted, fails
+    const entity = {
+      key,
+      data: { email: email, timestamp: timestamp, timestamp_history: [timestamp]}
+    };
+    await datastore.insert(entity);
+  } catch (e) {
+    // If it already exists, update with new history
+    let [data] = await datastore.get(key);
+
+    data.timestamp = timestamp;
+    data.timestamp_history.push(timestamp);
+
+    const entity = {
+      key,
+      data
+    };
+    const response = await datastore.update(entity);
+    console.log(response);
+  }
+}
