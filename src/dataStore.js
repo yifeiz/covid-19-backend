@@ -2,9 +2,9 @@ const { Datastore } = require("@google-cloud/datastore");
 
 const datastore = new Datastore();
 
-exports.insertForm = async submission => {
+exports.insertForm = async (submission, hashedUserID) => {
   const key = datastore.key({
-    path: [process.env.NEW_DATASTORE_KIND, submission.hashedUserID],
+    path: [process.env.NEW_DATASTORE_KIND, hashedUserID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
@@ -14,7 +14,6 @@ exports.insertForm = async submission => {
       key,
       data: { ...submission, history: [submission.form_responses] }
     };
-    console.log(entity);
     await datastore.insert(entity);
   } catch (e) {
     // If it already exists, update with new history
@@ -32,7 +31,6 @@ exports.insertForm = async submission => {
     };
     const response = await datastore.update(entity);
   }
-  console.log("Done insertForm");
 };
 
 //Migrates form submitted with cookie as a key to use google userID as a key
