@@ -11,7 +11,10 @@ const axios = require("axios");
 const flattenMatrix = require("./flattenMatrix/matrix.js");
 const googleData = require("./dataStore");
 const { OAuth2Client } = require("google-auth-library");
-const CLIENT_ID = 0;
+const bcrypt = require("bcrypt");
+
+const saltRounds = 13;
+const CLIENT_ID = process.env.CLIENT_ID;
 
 // app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
 app.use(cors({ origin: true, credentials: true }));
@@ -40,7 +43,13 @@ app.post("/submit", async (req, res) => {
       //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
     const payload = ticket.getPayload();
-    submission.userID = payload["sub"]; //sub is the user's unique google ID
+    const userID = payload["sub"]; //sub is the user's unique google ID
+    bcrypt.hash(userID, saltRounds, function(err, hash) {
+      if (err) {
+        res.status(400).send("Error, invalid login token");
+      }
+      submission.userID = hash;
+    });
   }
   verify().catch(console.error);
   console.log(`Google UserID: ${userID}`);
@@ -94,7 +103,6 @@ app.post("/submit", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   //Include google token field and cookies to req body
-
   //Google Sign-In Token Verification
   const client = new OAuth2Client(CLIENT_ID);
   let userID = null;
@@ -120,7 +128,14 @@ app.post("/login", async (req, res) => {
   const cookie_id = req.signedCookies.userCookieValue;
   if (cookie_id) {
     //Need to associate it w the googleUserID instead and delete the old one
-    await googleData.migrateCookieForm(userID, cookie_id);
+    bcrypt.hash(userID, saltRounds, async (err, hash) => {
+      if (err) {
+        res
+          .status(400)
+          .json({ loginSuccess: false, error: `Hashing error: ${err}` });
+      }
+      await googleData.migrateCookieForm(hash, cookie_id);
+    });
   }
   const data = { loginSuccess: true };
   res.status(200).json(data);

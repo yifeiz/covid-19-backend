@@ -4,7 +4,7 @@ const datastore = new Datastore();
 
 exports.insertForm = async submission => {
   const key = datastore.key({
-    path: [process.env.USERID_DATASTORE_KIND, submission.userID],
+    path: [process.env.NEW_DATASTORE_KIND, submission.userID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
@@ -36,14 +36,14 @@ exports.insertForm = async submission => {
 
 //Migrates form submitted with cookie as a key to use google userID as a key
 exports.migrateCookieForm = async (userID, cookie_id) => {
-  console.log("Migrating Form");
+  //userID is the hashed userID
   const cookieKey = datastore.key({
     path: [process.env.DATASTORE_KIND, cookie_id],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
   const key = datastore.key({
-    path: [process.env.USERID_DATASTORE_KIND, userID],
+    path: [process.env.NEW_DATASTORE_KIND, userID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
@@ -54,7 +54,7 @@ exports.migrateCookieForm = async (userID, cookie_id) => {
     return;
   }
 
-  data.cookie_id = [data.cookie_id]; // New array of all cookies
+  data.cookie_id = [data.cookie_id]; // Array of all cookies associated w this google account
 
   try {
     // Try to insert an object with userId as key. If already submitted, fails
