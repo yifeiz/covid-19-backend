@@ -11,13 +11,14 @@ const googleData = require("./dataStore");
 const crypto = require("crypto");
 const port = process.env.PORT || 80;
 const app = express();
+const { OAuth2Client } = require("google-auth-library");
 
 const hashingIterations = 100000;
 const CLIENT_ID = process.env.CLIENT_ID;
 
 // ONLY FOR DEBUG, UNCOMMENT WHEN MERGED
-// app.use(cors({ origin: true, credentials: true }));
-app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
+//app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
@@ -78,7 +79,7 @@ app.post("/submit", async (req, res) => {
   let userID = null;
   async function verify() {
     const ticket = await client.verifyIdToken({
-      idToken: token,
+      idToken: req.body.tokenId,
       audience: CLIENT_ID // Specify the CLIENT_ID of the app that accesses the backend
       // Or, if multiple clients access the backend:
       //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
@@ -124,9 +125,10 @@ app.post("/login", async (req, res) => {
   //Google Sign-In Token Verification
   const client = new OAuth2Client(CLIENT_ID);
   let userID = null;
+  console.log(req.body.tokenId);
   async function verify() {
     const ticket = await client.verifyIdToken({
-      idToken: token,
+      idToken: req.body.tokenId,
       audience: CLIENT_ID // Specify the CLIENT_ID of the app that accesses the backend
       // Or, if multiple clients access the backend:
       //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
@@ -134,7 +136,8 @@ app.post("/login", async (req, res) => {
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
   }
-  verify().catch(() => {
+  await verify().catch(() => {
+    console.log("Login Token Error");
     res.status(400).send("Token not valid, login failed");
     return;
   });
