@@ -6,3 +6,6 @@ env_variables: # production
   DATASTORE_KIND_MARKETING: "marketing"
   BACKEND_BRANCH: "PROD"
   DOMAIN: "flatten.ca"
+  PROJECT_ID: "flatten-271620"
+  KEYRING_LOCATION: "global"
+  KEYRING_ID: "form-ring"

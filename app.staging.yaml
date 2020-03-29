@@ -6,3 +6,6 @@ env_variables: # test
   DATASTORE_KIND_MARKETING: "marketing"
   BACKEND_BRANCH: "STAGING"
   DOMAIN: "staging.flatten.ca"
+  PROJECT_ID: "flatten-staging-271921"
+  KEYRING_LOCATION: "global"
+  KEYRING_ID: "form-ring"
