@@ -90,6 +90,7 @@ app.post("/submit", async (req, res) => {
 
   await verify().catch(err => {
     res.status(400).send(`Google IDToken verification failed`);
+    return;
   });
   console.log(`Google UserID: ${userID}`);
 
@@ -103,6 +104,7 @@ app.post("/submit", async (req, res) => {
     async (err, derivedKey) => {
       if (err) {
         res.status(400).send(`Hashing error: ${err}`);
+        return;
       }
       const hashedUserID = derivedKey.toString("hex");
       try {
@@ -138,16 +140,19 @@ app.post("/login", async (req, res) => {
     console.log(payload["email"]);
     console.log("Email");
   }
-  await verify().catch(() => {
+
+  try {
+    await verify();
+  } catch {
     console.log("Login Token Error");
     res.status(400).send("Token not valid, login failed");
     return;
-  });
+  }
   console.log(`Google UserID: ${userID}`);
   //End Token Verification
 
   //If cookie exists there may be a form associated w it
-  const cookie_id = req.signedCookies.userCookieValue;
+  const cookie_id = "41364541-064b-4d07-9308-c79dd2d5716d";
 
   //Need to associate it w the googleUserID instead and delete the old one
   if (cookie_id) {
@@ -160,6 +165,7 @@ app.post("/login", async (req, res) => {
       async (err, derivedKey) => {
         if (err) {
           res.status(400).send(`Hashing error: ${err}`);
+          return;
         }
         console.log(derivedKey.toString("hex"));
         await googleData.migrateCookieForm(

@@ -4,7 +4,7 @@ const datastore = new Datastore();
 
 exports.insertForm = async (submission, hashedUserID) => {
   const key = datastore.key({
-    path: [process.env.NEW_DATASTORE_KIND, hashedUserID],
+    path: [process.env.DATASTORE_KIND, hashedUserID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
@@ -42,7 +42,7 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   });
 
   const userIDKey = datastore.key({
-    path: [process.env.NEW_DATASTORE_KIND, hashedUserID],
+    path: [process.env.DATASTORE_KIND, hashedUserID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
