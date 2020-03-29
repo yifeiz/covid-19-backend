@@ -15,6 +15,7 @@ exports.insertForm = async (submission, hashedUserID) => {
       data: { ...submission, history: [submission.form_responses] }
     };
     await datastore.insert(entity);
+    console.log("Form submitted");
   } catch (e) {
     // If it already exists, update with new history
     let [data] = await datastore.get(key);

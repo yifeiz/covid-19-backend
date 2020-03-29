@@ -81,18 +81,22 @@ app.post("/submit", async (req, res) => {
     const ticket = await client.verifyIdToken({
       idToken: req.body.tokenId,
       audience: CLIENT_ID // Specify the CLIENT_ID of the app that accesses the backend
-      // Or, if multiple clients access the backend:
-      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
   }
 
-  await verify().catch(err => {
-    res.status(400).send(`Google IDToken verification failed`);
+  try {
+    await verify();
+  } catch {
+    console.log("Submit Token Error");
+    res
+      .status(400)
+      .send(
+        `Sorry, an error occured with your form submission. Please logout and log back into your account and try again`
+      );
     return;
-  });
-  console.log(`Google UserID: ${userID}`);
+  }
 
   //Used to create a hash
   crypto.pbkdf2(
@@ -127,7 +131,6 @@ app.post("/login", async (req, res) => {
   //Google Sign-In Token Verification
   const client = new OAuth2Client(CLIENT_ID);
   let userID = null;
-  console.log(req.body.tokenId);
   async function verify() {
     const ticket = await client.verifyIdToken({
       idToken: req.body.tokenId,
@@ -137,8 +140,6 @@ app.post("/login", async (req, res) => {
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
-    console.log(payload["email"]);
-    console.log("Email");
   }
 
   try {
@@ -148,11 +149,10 @@ app.post("/login", async (req, res) => {
     res.status(400).send("Token not valid, login failed");
     return;
   }
-  console.log(`Google UserID: ${userID}`);
   //End Token Verification
 
   //If cookie exists there may be a form associated w it
-  const cookie_id = "41364541-064b-4d07-9308-c79dd2d5716d";
+  const cookie_id = req.signedCookies.userCookieValue;
 
   //Need to associate it w the googleUserID instead and delete the old one
   if (cookie_id) {
@@ -167,7 +167,6 @@ app.post("/login", async (req, res) => {
           res.status(400).send(`Hashing error: ${err}`);
           return;
         }
-        console.log(derivedKey.toString("hex"));
         await googleData.migrateCookieForm(
           derivedKey.toString("hex"),
           cookie_id
@@ -181,7 +180,6 @@ app.post("/login", async (req, res) => {
 
 // determines if a cookie already exists
 app.get("/read-cookie", (req, res) => {
-  console.log(req.signedCookies.userCookieValue);
   const exists = req.signedCookies.userCookieValue ? true : false;
   res.send({ exists });
 });
