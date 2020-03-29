@@ -88,7 +88,7 @@ app.post("/submit", async (req, res) => {
     userID = payload["sub"]; //sub is the user's unique google ID
   }
 
-  verify().catch(err => {
+  await verify().catch(err => {
     res.status(400).send(`Google IDToken verification failed`);
   });
   console.log(`Google UserID: ${userID}`);
@@ -135,6 +135,8 @@ app.post("/login", async (req, res) => {
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
+    console.log(payload["email"]);
+    console.log("Email");
   }
   await verify().catch(() => {
     console.log("Login Token Error");
