@@ -1,3 +1,4 @@
+
 async function createCryptoKey(
     cryptoKeyId // Name of the crypto key
 ) {
@@ -23,7 +24,6 @@ async function createCryptoKey(
             purpose: 'ENCRYPT_DECRYPT',
         },
     });
-    console.log(`Key ${cryptoKey.name} created.`);
 }
 
 async function encrypt(
@@ -48,12 +48,10 @@ async function encrypt(
         cryptoKeyId
     );
 
-    var buf = Buffer.from(plaintext, "base64");
-    console.log(buf);
+    var buf = Buffer.from(plaintext);
 
     // Encrypts the file using the specified crypto key
     const [result] = await client.encrypt({name: name, plaintext: buf});
-    console.log(result);
     return result.ciphertext.toString("base64");
 }
 
@@ -82,25 +80,9 @@ async function decrypt(
 
     var buf = Buffer.from(ciphertext, "base64");
 
-    console.log(name);
-    console.log(buf);
     // Decrypts the file using the specified crypto key
     // const [result] = await client.decrypt({name, buf});
     const [result] = await client.decrypt({name: name, ciphertext: buf});
 
-    console.log(result);
-    return result.plaintext.toString('base64');
+    return result.plaintext.toString('utf8');
 }
-
-async function testKR() {
-    const key = 'b3';
-    const data = 'hello world hello';
-
-    // await createCryptoKey(key);
-    var ciphertext = await encrypt(key, data).catch(console.error);
-    console.log(`Encrypted ${ciphertext}`);
-    var decyphered = await decrypt(key, ciphertext).catch(console.error);
-    console.log(`Decrypted ${decyphered}`);
-}
-
-testKR();
