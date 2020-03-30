@@ -82,25 +82,31 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   await datastore.delete(cookieKey);
 };
 
-exports.insertMarketingData = async (email) => {
-
+exports.insertMarketingData = async email => {
   // sha256 hash of email becomes key
-  const hash = crypto.createHash('sha256');
+  const hash = crypto.createHash("sha256");
   hash.update(email);
-  var hashed_email = hash.digest('hex');
+  var hashed_email = hash.digest("hex");
 
   const key = datastore.key({
     path: [process.env.DATASTORE_KIND_MARKETING, hashed_email],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
-  var timestamp = moment.utc().startOf('day').unix();
+  var timestamp = moment
+    .utc()
+    .startOf("day")
+    .unix();
 
   try {
     // Try to insert an object with hashed email as key. If already submitted, fails
     const entity = {
       key,
-      data: { email: email, timestamp: timestamp, timestamp_history: [timestamp]}
+      data: {
+        email: email,
+        timestamp: timestamp,
+        timestamp_history: [timestamp]
+      }
     };
     await datastore.insert(entity);
   } catch (e) {

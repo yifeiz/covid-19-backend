@@ -13,7 +13,7 @@ const port = process.env.PORT || 80;
 const app = express();
 const { OAuth2Client } = require("google-auth-library");
 
-const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
+const { SecretManagerServiceClient } = require("@google-cloud/secret-manager");
 const smClient = new SecretManagerServiceClient();
 
 const hashingIterations = 100000;
@@ -36,19 +36,20 @@ var pepper, oauth_client_id, recaptcha_secret;
 
 async function accessSecretVersion(name) {
   const [version] = await smClient.accessSecretVersion({
-    name: name,
+    name: name
   });
 
-  const payload = version.payload.data.toString('utf8');
+  const payload = version.payload.data.toString("utf8");
 
   return payload;
 }
 
 // submit endpoint
 app.post("/submit", async (req, res) => {
-
   if (recaptcha_secret === undefined) {
-    recaptcha_secret = await accessSecretVersion(process.env.RECAPTCHA_SECRET).catch(console.error);
+    recaptcha_secret = await accessSecretVersion(
+      process.env.RECAPTCHA_SECRET
+    ).catch(console.error);
   }
 
   const recaptchaResponse = await axios.post(
@@ -93,7 +94,9 @@ app.post("/submit", async (req, res) => {
   //Google Sign-In Token Verification
   //Add google token field to req body
   if (oauth_client_id === undefined) {
-    oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(console.error);
+    oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(
+      console.error
+    );
   }
   const client = new OAuth2Client(oauth_client_id);
   let userID = null;
@@ -101,7 +104,7 @@ app.post("/submit", async (req, res) => {
   async function verify() {
     const ticket = await client.verifyIdToken({
       idToken: req.body.tokenId,
-      audience: CLIENT_ID // Specify the CLIENT_ID of the app that accesses the backend
+      audience: oauth_client_id // Specify the CLIENT_ID of the app that accesses the backend
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
@@ -122,7 +125,7 @@ app.post("/submit", async (req, res) => {
   await googleData.insertMarketingData(userEmail);
 
   if (pepper === undefined) {
-    let kms = require('./kms.js');
+    let kms = require("./kms.js");
     pepper = await kms.loadPepper();
   }
   //Used to create a hash
@@ -157,16 +160,16 @@ app.post("/login", async (req, res) => {
   //Include google token field and cookies to req body
   //Google Sign-In Token Verification
   if (oauth_client_id === undefined) {
-    oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(console.error);
+    oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(
+      console.error
+    );
   }
-  const client = new OAuth2Client(CLIENT_ID);
+  const client = new OAuth2Client(oauth_client_id);
   let userID = null;
   async function verify() {
     const ticket = await client.verifyIdToken({
       idToken: req.body.tokenId,
-      audience: CLIENT_ID // Specify the CLIENT_ID of the app that accesses the backend
-      // Or, if multiple clients access the backend:
-      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+      audience: oauth_client_id // Specify the CLIENT_ID of the app that accesses the backend
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
@@ -185,7 +188,7 @@ app.post("/login", async (req, res) => {
   const cookie_id = req.signedCookies.userCookieValue;
 
   if (pepper === undefined) {
-    let kms = require('./kms.js');
+    let kms = require("./kms.js");
     pepper = await kms.loadPepper();
   }
   //Need to associate it w the googleUserID instead and delete the old one
