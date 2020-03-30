@@ -1,20 +1,23 @@
 const { Datastore } = require("@google-cloud/datastore");
+const crypto = require("crypto");
+const moment = require("moment");
 
 const datastore = new Datastore();
 
-exports.insertForm = async submission => {
+exports.insertForm = async (submission, hashedUserID) => {
   const key = datastore.key({
-    path: [process.env.DATASTORE_KIND, submission.cookie_id],
+    path: [process.env.DATASTORE_KIND, hashedUserID],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
   try {
-    // Try to insert an object with cookie_id as key. If already submitted, fails
+    // Try to insert an object with hashed userId as key. If already submitted, fails
     const entity = {
       key,
       data: { ...submission, history: [submission.form_responses] }
     };
     await datastore.insert(entity);
+    console.log("Form submitted");
   } catch (e) {
     // If it already exists, update with new history
     let [data] = await datastore.get(key);
@@ -24,6 +27,94 @@ exports.insertForm = async submission => {
     data.timestamp = submission.timestamp;
     data.at_risk = submission.at_risk;
     data.probable = submission.probable;
+
+    const entity = {
+      key,
+      data
+    };
+    const response = await datastore.update(entity);
+  }
+};
+
+//Migrates form submitted with cookie as a key to use google userID as a key
+exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
+  //userID is the hashed userID
+  const cookieKey = datastore.key({
+    path: [process.env.DATASTORE_KIND, cookie_id],
+    namespace: process.env.DATASTORE_NAMESPACE
+  });
+
+  const userIDKey = datastore.key({
+    path: [process.env.DATASTORE_KIND, hashedUserID],
+    namespace: process.env.DATASTORE_NAMESPACE
+  });
+
+  //cookieKey Data
+  const [cookieKeyData] = await datastore.get(cookieKey);
+  if (!cookieKeyData) {
+    // No cookieKey form exists;
+    return;
+  }
+  delete cookieKeyData.cookie_id; //Deletes old cookie_id field, no longer needed as express-session cookies are used
+  try {
+    // Try to insert an object with userId as key. If already submitted, fails
+    const newEntity = {
+      key: userIDKey,
+      data: cookieKeyData
+    };
+    await datastore.insert(newEntity);
+    console.log("Cookie entry migrated");
+  } catch (e) {
+    // If it already exists, add cookie to the cookies array
+    let [userIDKeyData] = await datastore.get(userIDKey);
+    delete userIDKeyData.cookie_id;
+
+    //Concat history to the existing one
+    userIDKeyData.history = userIDKeyData.history.concat(cookieKeyData.history);
+    const updatedEntity = {
+      key: userIDKey,
+      data: userIDKeyData
+    };
+    const response = await datastore.update(updatedEntity);
+    console.log("UserID entry Updated");
+  }
+  // Delete old cookieID entry
+  await datastore.delete(cookieKey);
+};
+
+exports.insertMarketingData = async email => {
+  // sha256 hash of email becomes key
+  const hash = crypto.createHash("sha256");
+  hash.update(email);
+  var hashed_email = hash.digest("hex");
+
+  const key = datastore.key({
+    path: [process.env.DATASTORE_KIND_MARKETING, hashed_email],
+    namespace: process.env.DATASTORE_NAMESPACE
+  });
+
+  var timestamp = moment
+    .utc()
+    .startOf("day")
+    .unix();
+
+  try {
+    // Try to insert an object with hashed email as key. If already submitted, fails
+    const entity = {
+      key,
+      data: {
+        email: email,
+        timestamp: timestamp,
+        timestamp_history: [timestamp]
+      }
+    };
+    await datastore.insert(entity);
+  } catch (e) {
+    // If it already exists, update with new history
+    let [data] = await datastore.get(key);
+
+    data.timestamp = timestamp;
+    data.timestamp_history.push(timestamp);
 
     const entity = {
       key,
