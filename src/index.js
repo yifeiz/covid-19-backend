@@ -19,8 +19,8 @@ const smClient = new SecretManagerServiceClient();
 const hashingIterations = 100000;
 
 // ONLY FOR DEBUG, UNCOMMENT WHEN MERGED
-app.use(cors({ origin: true, credentials: true }));
-//app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
+// app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
