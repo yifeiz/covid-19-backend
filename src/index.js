@@ -11,6 +11,7 @@ const googleData = require("./dataStore");
 const crypto = require("crypto");
 const port = process.env.PORT || 80;
 const app = express();
+const { v4: uuidv4 } = require("uuid");
 const { OAuth2Client } = require("google-auth-library");
 
 const { SecretManagerServiceClient } = require("@google-cloud/secret-manager");
@@ -19,7 +20,7 @@ const smClient = new SecretManagerServiceClient();
 const hashingIterations = 100000;
 
 // ONLY FOR DEBUG, UNCOMMENT WHEN MERGED
-// app.use(cors({ origin: true, credentials: true }));
+//app.use(cors({ origin: true, credentials: true }));
 app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -55,7 +56,6 @@ app.post("/submit", async (req, res) => {
   const recaptchaResponse = await axios.post(
     `https://www.google.com/recaptcha/api/siteverify?secret=${recaptcha_secret}&response=${req.body.reactVerification}`
   );
-
   if (!recaptchaResponse.data.success) {
     res.status(400).send("Sorry, your recaptcha was invalid.");
     return;
@@ -90,6 +90,44 @@ app.post("/submit", async (req, res) => {
       timestamp
     }
   };
+
+  //Cookie Form
+  if (!req.body.tokenId) {
+    //If not logged in, use cookie to store form as before
+
+    // Check if cookie value already exists; if not, generate a new one
+    if (req.signedCookies.userCookieValue) {
+      submission.cookie_id = req.signedCookies.userCookieValue;
+    } else {
+      submission.cookie_id = uuidv4();
+      const submission_cookie_options = {
+        domain: process.env.DOMAIN,
+        httpOnly: true,
+        maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
+        secure: true,
+        signed: true
+      };
+      res.cookie(
+        "userCookieValue",
+        submission.cookie_id,
+        submission_cookie_options
+      );
+    }
+    // Inserts/updates entity in dataStore
+    try {
+      await googleData.insertForm(submission);
+    } catch (e) {
+      res
+        .status(400)
+        .send(
+          "Sorry, an error occured with your form submission. Please refresh the page and try again."
+        );
+      return;
+    }
+    res.status(200).send(true);
+    return;
+  }
+  //End Cookie Form
 
   //Google Sign-In Token Verification
   //Add google token field to req body
