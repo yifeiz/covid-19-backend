@@ -8,4 +8,7 @@ env_variables: # production
   DOMAIN: "flatten.ca"
   PROJECT_ID: "flatten-271620"
   KEYRING_LOCATION: "global"
-  KEYRING_ID: "form-ring"
+  SECRETS_KEYRING: "backend-secrets"
+  # Secrets for the database
+  PEPPER_KEY: "pepper_staging"
+  PEPPER_FILE: "./secrets/pepper_master.encrypted"

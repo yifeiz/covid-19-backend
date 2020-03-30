@@ -30,6 +30,8 @@ app.use(helmet.permittedCrossDomainPolicies());
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 
+var pepper;
+
 // submit endpoint
 app.post("/submit", async (req, res) => {
   const SECRET_KEY = "6LfuVOIUAAAAAFWii1XMYDcGVjeXUrahVaHMxz26";
@@ -101,6 +103,10 @@ app.post("/submit", async (req, res) => {
   }
   await googleData.insertMarketingData(userEmail);
 
+  if (pepper === undefined) {
+    let kms = require('./kms.js');
+    pepper = await kms.loadPepper();
+  }
   //Used to create a hash
   crypto.pbkdf2(
     userID, //Thing to hash
@@ -157,11 +163,16 @@ app.post("/login", async (req, res) => {
   //If cookie exists there may be a form associated w it
   const cookie_id = req.signedCookies.userCookieValue;
 
+  if (pepper === undefined) {
+    let kms = require('./kms.js');
+    pepper = await kms.loadPepper();
+  }
+  console.log(pepper);
   //Need to associate it w the googleUserID instead and delete the old one
   if (cookie_id) {
     crypto.pbkdf2(
       userID, // Thing to hash
-      process.env.PEPPER, // 128bit Pepper
+      pepper, // 128bit Pepper
       hashingIterations, // Num of iterations (recomended is aprox 100k)
       64, // Key length
       "sha512", // HMAC Digest Algorithm
