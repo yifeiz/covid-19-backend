@@ -77,6 +77,7 @@ app.post("/submit", async (req, res) => {
   //Add google token field to req body
   const client = new OAuth2Client(CLIENT_ID);
   let userID = null;
+  let userEmail = null;
   async function verify() {
     const ticket = await client.verifyIdToken({
       idToken: req.body.tokenId,
@@ -84,6 +85,7 @@ app.post("/submit", async (req, res) => {
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
+    userEmail = payload["email"]; //email is the user's email...
   }
 
   try {
@@ -97,6 +99,7 @@ app.post("/submit", async (req, res) => {
       );
     return;
   }
+  await googleData.insertMarketingData(userEmail);
 
   //Used to create a hash
   crypto.pbkdf2(
