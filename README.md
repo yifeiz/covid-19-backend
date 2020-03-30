@@ -25,12 +25,6 @@ To test locally, you will need to set up a service account key. Obtain a JSON ke
 
 After making sure you have node, npm, and the Cloud SDK set up on your system, you can run `npm install` to get dependencies, and then `npm start` in the root directory to start the project.
 
-
-## Secrets
-
-The pepper files used to hash Google User IDs are stored in `secrets/pepper_<BRANCH>.encrypted`.
-You will only be able to access the one for staging, nobody should ever view the master one.
-
 ## Additional Tools
 
 The following tools may be very helpful to you, please check them out.
