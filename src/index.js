@@ -131,7 +131,7 @@ app.post("/submit", async (req, res) => {
   //Used to create a hash
   crypto.pbkdf2(
     userID, //Thing to hash
-    process.env.PEPPER, //128bit Pepper
+    pepper, //128bit Pepper
     hashingIterations, //Num of iterations (recomended is aprox 100k)
     64, //Key length
     "sha512", // HMAC Digest Algorithm
