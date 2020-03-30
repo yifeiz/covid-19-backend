@@ -13,8 +13,10 @@ const port = process.env.PORT || 80;
 const app = express();
 const { OAuth2Client } = require("google-auth-library");
 
+const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
+const smClient = new SecretManagerServiceClient();
+
 const hashingIterations = 100000;
-const CLIENT_ID = process.env.CLIENT_ID;
 
 // ONLY FOR DEBUG, UNCOMMENT WHEN MERGED
 app.use(cors({ origin: true, credentials: true }));
@@ -30,14 +32,27 @@ app.use(helmet.permittedCrossDomainPolicies());
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
 app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
 
-var pepper;
+var pepper, oauth_client_id, recaptcha_secret;
+
+async function accessSecretVersion(name) {
+  const [version] = await smClient.accessSecretVersion({
+    name: name,
+  });
+
+  const payload = version.payload.data.toString('utf8');
+
+  return payload;
+}
 
 // submit endpoint
 app.post("/submit", async (req, res) => {
-  const SECRET_KEY = "6LfuVOIUAAAAAFWii1XMYDcGVjeXUrahVaHMxz26";
+
+  if (recaptcha_secret === undefined) {
+    recaptcha_secret = await accessSecretVersion(process.env.RECAPTCHA_SECRET).catch(console.error);
+  }
 
   const recaptchaResponse = await axios.post(
-    `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${req.body.reactVerification}`
+    `https://www.google.com/recaptcha/api/siteverify?secret=${recaptcha_secret}&response=${req.body.reactVerification}`
   );
 
   if (!recaptchaResponse.data.success) {
@@ -77,7 +92,10 @@ app.post("/submit", async (req, res) => {
 
   //Google Sign-In Token Verification
   //Add google token field to req body
-  const client = new OAuth2Client(CLIENT_ID);
+  if (oauth_client_id === undefined) {
+    oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(console.error);
+  }
+  const client = new OAuth2Client(oauth_client_id);
   let userID = null;
   let userEmail = null;
   async function verify() {
@@ -138,6 +156,9 @@ app.post("/submit", async (req, res) => {
 app.post("/login", async (req, res) => {
   //Include google token field and cookies to req body
   //Google Sign-In Token Verification
+  if (oauth_client_id === undefined) {
+    oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(console.error);
+  }
   const client = new OAuth2Client(CLIENT_ID);
   let userID = null;
   async function verify() {
@@ -167,7 +188,6 @@ app.post("/login", async (req, res) => {
     let kms = require('./kms.js');
     pepper = await kms.loadPepper();
   }
-  console.log(pepper);
   //Need to associate it w the googleUserID instead and delete the old one
   if (cookie_id) {
     crypto.pbkdf2(
