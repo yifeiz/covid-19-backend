@@ -1,8 +1,31 @@
 const { Datastore } = require("@google-cloud/datastore");
 const crypto = require("crypto");
 const moment = require("moment");
+const kms = require("./kms.js");
 
 const datastore = new Datastore();
+
+// max number of chars allowed in a google cloud datastore key - hashed IDs are longer
+const encrypt_ip_substring_chars = 63;
+
+// truncates IDs from the datastore into keys that can be used to encrypt parts of each document
+function keyFromId(id) {
+    return id.substring(0, encrypt_ip_substring_chars);
+}
+
+// Encrypts the Ip address in data, storing the cypher text in a different field
+async function encryptIp(id, data) {
+  let key = keyFromId(id);
+  data.ip_encrypted = await kms.encrypt(process.env.FORM_KEYRING, key, data.ip_address);
+  delete data.ip_address; // deletes the existing plaintext ip address, if it exists
+}
+
+// Creates the key associated with a specified key and encrypts the ip in data
+async function encryptNewIp(id, data) {
+  let key = keyFromId(id);
+    await kms.createCryptoKey(process.env.FORM_KEYRING, key).catch(console.error);
+    await encryptIp(id, data);
+}
 
 exports.insertForm = async (submission, hashedUserID) => {
   //Cookie Form handling
@@ -14,10 +37,13 @@ exports.insertForm = async (submission, hashedUserID) => {
     });
 
     try {
+      let data = { ...submission, history: [submission.form_responses] };
+      // encrypt the ip of the submission using the cookie as the key
+      await encryptNewIp(submission.cookie_id, data);
       // Try to insert an object with cookie_id as key. If already submitted, fails
       const entity = {
         key,
-        data: { ...submission, history: [submission.form_responses] }
+        data: data
       };
       await datastore.insert(entity);
     } catch (e) {
@@ -29,6 +55,10 @@ exports.insertForm = async (submission, hashedUserID) => {
       data.timestamp = submission.timestamp;
       data.at_risk = submission.at_risk;
       data.probable = submission.probable;
+      // encrypt the ip of the submission using the cookie as the key, however this time we know that
+      // the key already exists
+      data.ip_address = submission.ip_address;
+      await encryptIp(hashedUserID, data);
 
       const entity = {
         key,
@@ -48,9 +78,11 @@ exports.insertForm = async (submission, hashedUserID) => {
 
   try {
     // Try to insert an object with hashed userId as key. If already submitted, fails
+    let data = { ...submission, history: [submission.form_responses] };
+    await encryptNewIp(hashedUserID, data);
     const entity = {
       key,
-      data: { ...submission, history: [submission.form_responses] }
+      data: data
     };
     await datastore.insert(entity);
     console.log("Form submitted");
@@ -63,6 +95,8 @@ exports.insertForm = async (submission, hashedUserID) => {
     data.timestamp = submission.timestamp;
     data.at_risk = submission.at_risk;
     data.probable = submission.probable;
+    data.ip_address = submission.ip_address;
+    await encryptIp(hashedUserID, data);
 
     const entity = {
       key,
@@ -90,7 +124,13 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   if (!cookieKeyData) {
     // No cookieKey form exists;
     return;
+  } else if (!(cookieKeyData.ip_encrypted === undefined)) {
+    // if ip address already encrypted, we need to decrypt
+    cookieKeyData.ip_address = await kms.decrypt(process.env.FORM_KEYRING, cookieKeyData.cookie_id, cookieKeyData.ip_address).catch();
   }
+  // hash the ip with the new id
+  await encryptNewIp(hashedUserID, cookieKeyData);
+
   delete cookieKeyData.cookie_id; //Deletes old cookie_id field, no longer needed as express-session cookies are used
   try {
     // Try to insert an object with userId as key. If already submitted, fails
@@ -99,7 +139,6 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
       data: cookieKeyData
     };
     await datastore.insert(newEntity);
-    console.log("Cookie entry migrated");
   } catch (e) {
     // If it already exists, add cookie to the cookies array
     let [userIDKeyData] = await datastore.get(userIDKey);
