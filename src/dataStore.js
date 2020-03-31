@@ -162,13 +162,8 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
 };
 
 exports.insertMarketingData = async email => {
-  // sha256 hash of email becomes key
-  const hash = crypto.createHash("sha256");
-  hash.update(email);
-  var hashed_email = hash.digest("hex");
-
   const key = datastore.key({
-    path: [process.env.DATASTORE_KIND_MARKETING, hashed_email],
+    path: [process.env.DATASTORE_KIND_MARKETING, email],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
