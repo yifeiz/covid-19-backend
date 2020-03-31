@@ -11,6 +11,7 @@ env_variables: # production
   SECRETS_KEYRING: "backend-secrets"
   FORM_KEYRING: "form-data"
   # Secrets for the database
+  IP_KEY: "ip"
   PEPPER_KEY: "pepper_master"
   PEPPER_FILE: "./secrets/pepper_master.encrypted"
   # Secret paths in secret manager
