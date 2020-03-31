@@ -31,7 +31,7 @@ app.use(helmet());
 app.use(helmet.permittedCrossDomainPolicies());
 
 // Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
-app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 var pepper, oauth_client_id, recaptcha_secret;
 
