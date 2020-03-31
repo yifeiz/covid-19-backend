@@ -144,13 +144,15 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
     return;
   } else if (!(cookieKeyData.ip_encrypted === undefined)) {
     // if ip address already encrypted, we need to decrypt
-    cookieKeyData.ip_address = await kms
-      .decrypt(
+    try {
+      cookieKeyData.ip_address = await kms.decrypt(
         process.env.FORM_KEYRING,
         cookieKeyData.cookie_id,
-        cookieKeyData.ip_address
-      )
-      .catch();
+        cookieKeyData.ip_encrypted
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
   // hash the ip with the new id
   await encryptNewIp(hashedUserID, cookieKeyData);
