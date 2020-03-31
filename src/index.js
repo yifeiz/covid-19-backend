@@ -59,10 +59,6 @@ app.post("/submit", async (req, res) => {
     ).catch(console.error);
   }
 
-  if (!cookie_secret_loaded) {
-    await loadCookieSecret();
-  }
-
   const recaptchaResponse = await axios.post(
     `https://www.google.com/recaptcha/api/siteverify?secret=${recaptcha_secret}&response=${req.body.reactVerification}`
   );
@@ -211,10 +207,6 @@ app.post("/login", async (req, res) => {
     oauth_client_id = await accessSecretVersion(process.env.OAUTH_SECRET).catch(
       console.error
     );
-  }
-
-  if (!cookie_secret_loaded) {
-    await loadCookieSecret();
   }
 
   const client = new OAuth2Client(oauth_client_id);
