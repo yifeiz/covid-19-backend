@@ -9,6 +9,7 @@ env_variables: # test
   PROJECT_ID: "flatten-staging-271921"
   KEYRING_LOCATION: "global"
   SECRETS_KEYRING: "backend-secrets"
+  FORM_KEYRING: "form-ring"
   # Secrets for the database
   PEPPER_KEY: "pepper_staging"
   PEPPER_FILE: "./secrets/pepper_staging.encrypted"
