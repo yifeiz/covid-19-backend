@@ -17,3 +17,4 @@ env_variables: # test
   # Secret paths in secret manager
   OAUTH_SECRET: "projects/233853318753/secrets/oauth-client-id/versions/latest"
   RECAPTCHA_SECRET: "projects/233853318753/secrets/recaptcha-secret-key/versions/latest"
+  COOKIE_SECRET: "projects/233853318753/secrets/cookie-secret/versions/latest"

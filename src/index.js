@@ -30,10 +30,8 @@ app.use(express.json());
 app.use(helmet());
 app.use(helmet.permittedCrossDomainPolicies());
 
-// Setting a uuid here instead of calling uuidv4() function, so that decoding value doesn't change everytime app restarts
-app.use(cookieParser("a2285a99-34f3-459d-9ea7-f5171eed3aba"));
-
 var pepper, oauth_client_id, recaptcha_secret;
+var cookie_secret_loaded = false;
 
 async function accessSecretVersion(name) {
   const [version] = await smClient.accessSecretVersion({
@@ -45,12 +43,22 @@ async function accessSecretVersion(name) {
   return payload;
 }
 
+async function loadCookieSecret() {
+  let cookie_secret = await accessSecretVersion(process.env.COOKIE_SECRET).catch(console.error);
+  app.use(cookieParser(cookie_secret));
+  cookie_secret_loaded = true;
+}
+
 // submit endpoint
 app.post("/submit", async (req, res) => {
   if (recaptcha_secret === undefined) {
     recaptcha_secret = await accessSecretVersion(
       process.env.RECAPTCHA_SECRET
     ).catch(console.error);
+  }
+
+  if (!cookie_secret_loaded) {
+    await loadCookieSecret();
   }
 
   const recaptchaResponse = await axios.post(
@@ -202,6 +210,11 @@ app.post("/login", async (req, res) => {
       console.error
     );
   }
+
+  if (!cookie_secret_loaded) {
+    await loadCookieSecret();
+  }
+
   const client = new OAuth2Client(oauth_client_id);
   let userID = null;
   async function verify() {
