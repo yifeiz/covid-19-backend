@@ -76,7 +76,7 @@ exports.insertForm = async (submission, hashedUserID) => {
       // the key already exists
       data.ip_address = submission.ip_address;
       console.log("encrypt in submit");
-      await encryptIp(hashedUserID, data);
+      await encryptIp(submission.cookie_id, data);
       console.log("finished encrypting in submit");
       const entity = {
         key,
