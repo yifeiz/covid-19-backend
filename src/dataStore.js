@@ -31,7 +31,11 @@ async function encryptIp(id, data) {
 async function encryptNewIp(id, data) {
   console.log("encrypt new IP");
   let key = keyFromId(id);
-  await kms.createCryptoKey(process.env.FORM_KEYRING, key).catch(console.error);
+  try {
+    await kms.createCryptoKey(process.env.FORM_KEYRING, key);
+  } catch (e) {
+    console.log("Key already exists");
+  }
   await encryptIp(id, data);
   console.log("dnew IP");
 }
