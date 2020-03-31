@@ -45,12 +45,22 @@ async function accessSecretVersion(name) {
   return payload;
 }
 
+async function loadCookieSecret() {
+  let cookie_secret = await accessSecretVersion(process.env.COOKIE_SECRET).catch(console.error);
+  app.use(cookieParser(cookie_secret));
+  cookie_secret_loaded = true;
+}
+
 // submit endpoint
 app.post("/submit", async (req, res) => {
   if (recaptcha_secret === undefined) {
     recaptcha_secret = await accessSecretVersion(
       process.env.RECAPTCHA_SECRET
     ).catch(console.error);
+  }
+
+  if (!cookie_secret_loaded) {
+    await loadCookieSecret();
   }
 
   const recaptchaResponse = await axios.post(
@@ -202,6 +212,11 @@ app.post("/login", async (req, res) => {
       console.error
     );
   }
+
+  if (!cookie_secret_loaded) {
+    await loadCookieSecret();
+  }
+
   const client = new OAuth2Client(oauth_client_id);
   let userID = null;
   async function verify() {

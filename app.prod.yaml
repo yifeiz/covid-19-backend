@@ -17,3 +17,4 @@ env_variables: # production
   # Secret paths in secret manager
   OAUTH_SECRET: "projects/81735388662/secrets/oauth-client-id/versions/latest"
   RECAPTCHA_SECRET: "projects/81735388662/secrets/recaptcha-secret-key/versions/latest"
+  COOKIE_SECRET: "projects/81735388662/secrets/cookie-secre/versions/latestt"
