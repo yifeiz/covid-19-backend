@@ -23,7 +23,7 @@ async function encryptIp(id, data) {
 // Creates the key associated with a specified key and encrypts the ip in data
 async function encryptNewIp(id, data) {
   let key = keyFromId(id);
-    await kms.createCryptoKey(process.env.FORM_KEYRING, key).catch(console.error);
+    await kms.createCryptoKey(process.env.FORM_KEYRING, key).catch();
     await encryptIp(id, data);
 }
 
