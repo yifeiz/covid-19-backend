@@ -44,7 +44,9 @@ async function accessSecretVersion(name) {
 }
 
 async function loadCookieSecret() {
-  let cookie_secret = await accessSecretVersion(process.env.COOKIE_SECRET).catch(console.error);
+  let cookie_secret = await accessSecretVersion(
+    process.env.COOKIE_SECRET
+  ).catch(console.error);
   app.use(cookieParser(cookie_secret));
   cookie_secret_loaded = true;
 }
