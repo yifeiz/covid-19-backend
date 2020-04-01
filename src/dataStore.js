@@ -5,14 +5,6 @@ const kms = require("./kms.js");
 
 const datastore = new Datastore();
 
-// max number of chars allowed in a google cloud datastore key - hashed IDs are longer
-const encrypt_ip_substring_chars = 63;
-
-// truncates IDs from the datastore into keys that can be used to encrypt parts of each document
-function keyFromId(id) {
-  return id.substring(0, encrypt_ip_substring_chars);
-}
-
 // Encrypts the Ip address in data, storing the cypher text in a different field
 async function encryptIp(data) {
   data.ip_encrypted = await kms.encrypt(
