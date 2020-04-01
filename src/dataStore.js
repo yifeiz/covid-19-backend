@@ -15,7 +15,11 @@ function keyFromId(id) {
 
 // Encrypts the Ip address in data, storing the cypher text in a different field
 async function encryptIp(data) {
-  data.ip_encrypted = await kms.encrypt(process.env.SECRETS_KEYRING, process.env.IP_KEY, data.ip_address);
+  data.ip_encrypted = await kms.encrypt(
+    process.env.SECRETS_KEYRING,
+    process.env.IP_KEY,
+    data.ip_address
+  );
   delete data.ip_address; // deletes the existing plaintext ip address, if it exists
 }
 
