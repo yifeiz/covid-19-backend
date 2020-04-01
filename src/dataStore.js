@@ -14,30 +14,13 @@ function keyFromId(id) {
 }
 
 // Encrypts the Ip address in data, storing the cypher text in a different field
-async function encryptIp(id, data) {
-  console.log("encryptIp");
-  let key = keyFromId(id);
-  console.log(`key: key`);
+async function encryptIp(data) {
   data.ip_encrypted = await kms.encrypt(
-    process.env.FORM_KEYRING,
-    key,
+    process.env.SECRETS_KEYRING,
+    process.env.IP_KEY,
     data.ip_address
   );
-  console.log("encrypted IP");
   delete data.ip_address; // deletes the existing plaintext ip address, if it exists
-}
-
-// Creates the key associated with a specified key and encrypts the ip in data
-async function encryptNewIp(id, data) {
-  console.log("encrypt new IP");
-  let key = keyFromId(id);
-  try {
-    await kms.createCryptoKey(process.env.FORM_KEYRING, key);
-  } catch (e) {
-    console.log("Key already exists");
-  }
-  await encryptIp(id, data);
-  console.log("dnew IP");
 }
 
 exports.insertForm = async (submission, hashedUserID) => {
@@ -55,7 +38,7 @@ exports.insertForm = async (submission, hashedUserID) => {
       console.log("Entering try");
       let data = { ...submission, history: [submission.form_responses] };
       // encrypt the ip of the submission using the cookie as the key
-      await encryptNewIp(submission.cookie_id, data);
+      await encryptIp(data);
       // Try to insert an object with cookie_id as key. If already submitted, fails
       const entity = {
         key,
@@ -75,9 +58,8 @@ exports.insertForm = async (submission, hashedUserID) => {
       // encrypt the ip of the submission using the cookie as the key, however this time we know that
       // the key already exists
       data.ip_address = submission.ip_address;
-      console.log("encrypt in submit");
-      await encryptIp(submission.cookie_id, data);
-      console.log("finished encrypting in submit");
+      await encryptIp(data);
+
       const entity = {
         key,
         data
@@ -97,7 +79,7 @@ exports.insertForm = async (submission, hashedUserID) => {
   try {
     // Try to insert an object with hashed userId as key. If already submitted, fails
     let data = { ...submission, history: [submission.form_responses] };
-    await encryptNewIp(hashedUserID, data);
+    await encryptIp(data);
     const entity = {
       key,
       data: data
@@ -114,7 +96,7 @@ exports.insertForm = async (submission, hashedUserID) => {
     data.at_risk = submission.at_risk;
     data.probable = submission.probable;
     data.ip_address = submission.ip_address;
-    await encryptIp(hashedUserID, data);
+    await encryptIp(data);
 
     const entity = {
       key,
@@ -146,8 +128,8 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
     // if ip address already encrypted, we need to decrypt
     try {
       cookieKeyData.ip_address = await kms.decrypt(
-        process.env.FORM_KEYRING,
-        cookieKeyData.cookie_id,
+        process.env.SECRETS_KEYRING,
+        cookieKeyData.IP_KEY,
         cookieKeyData.ip_encrypted
       );
     } catch (e) {
@@ -155,7 +137,7 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
     }
   }
   // hash the ip with the new id
-  await encryptNewIp(hashedUserID, cookieKeyData);
+  await encryptIp(cookieKeyData);
 
   delete cookieKeyData.cookie_id; //Deletes old cookie_id field, no longer needed as express-session cookies are used
   try {
@@ -184,13 +166,8 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
 };
 
 exports.insertMarketingData = async email => {
-  // sha256 hash of email becomes key
-  const hash = crypto.createHash("sha256");
-  hash.update(email);
-  var hashed_email = hash.digest("hex");
-
   const key = datastore.key({
-    path: [process.env.DATASTORE_KIND_MARKETING, hashed_email],
+    path: [process.env.DATASTORE_KIND_MARKETING, email],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
