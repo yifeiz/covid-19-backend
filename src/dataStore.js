@@ -124,20 +124,13 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   if (!cookieKeyData) {
     // No cookieKey form exists;
     return;
-  } else if (!(cookieKeyData.ip_encrypted === undefined)) {
-    // if ip address already encrypted, we need to decrypt
-    try {
-      cookieKeyData.ip_address = await kms.decrypt(
-        process.env.SECRETS_KEYRING,
-        cookieKeyData.IP_KEY,
-        cookieKeyData.ip_encrypted
-      );
-    } catch (e) {
-      console.log(e);
-    }
   }
-  // hash the ip with the new id
-  await encryptIp(cookieKeyData);
+
+  // encrypt the IP in the cookie key data
+  if (cookieKeyData.ip_encrypted === undefined) {
+    // hash the ip with the new id
+    await encryptIp(cookieKeyData);
+  }
 
   delete cookieKeyData.cookie_id; //Deletes old cookie_id field, no longer needed as express-session cookies are used
   try {
