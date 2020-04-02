@@ -1,6 +1,8 @@
+// Import the library and create a client
+const kms = require('@google-cloud/kms');
+const client = new kms.KeyManagementServiceClient();
 
 exports.createCryptoKey = async (
-    client, // KMS Client
     keyRingId, // The ID of the keyring that the key is to be stored on.
     cryptoKeyId // Name of the crypto key
 ) => {
@@ -23,7 +25,6 @@ exports.createCryptoKey = async (
 };
 
 exports.encrypt = async (
-    client, // KMS Client
     keyRingId, // The ID of the keyring that the key is to be stored on.
     cryptoKeyId, // Name of the crypto key
     plaintext // Plaintext to be encrypted
@@ -43,13 +44,12 @@ exports.encrypt = async (
     var buf = Buffer.from(plaintext);
 
     // Encrypts the file using the specified crypto key
-    const [result] = await client.encrypt({name: name, plaintext: buf});
+    const [result] = await client.encrypt({name: name, plaintext: buf}).catch(console.error);
     return result.ciphertext.toString("base64");
 };
 
 
 exports.decrypt = async (
-    client, // KMS Client
     keyRingId, // The ID of the keyring that the key is to be stored on.
     cryptoKeyId, // Name of the crypto key, e.g. "my-key"
     ciphertext, // Data to be decrypted, file path or string
@@ -88,12 +88,7 @@ exports.decrypt = async (
 
 // Loads the pepper by decrypting it using KMS.
 exports.loadPepper = async () => {
-
-    // Import the library and create a client
-    const kms = require('@google-cloud/kms');
-    const client = new kms.KeyManagementServiceClient();
-
-    const pepper = await exports.decrypt(client, process.env.SECRETS_KEYRING, process.env.PEPPER_KEY, process.env.PEPPER_FILE, true);
+    const pepper = await exports.decrypt(process.env.SECRETS_KEYRING, process.env.PEPPER_KEY, process.env.PEPPER_FILE, true);
     return pepper;
 };
 
