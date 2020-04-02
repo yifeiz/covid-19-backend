@@ -98,8 +98,8 @@ exports.insertForm = async (submission, hashedUserID) => {
   }
 };
 
-//Migrates form submitted with cookie as a key to use google userID as a key
-exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
+  // Migrates form submitted with cookie as a key to use google userID as a key
+  exports.migrateCookieForm = async (hashedUserID, cookie_id, email) => {
   //userID is the hashed userID
   const cookieKey = datastore.key({
     path: [process.env.DATASTORE_KIND, cookie_id],
@@ -117,6 +117,8 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
     // No cookieKey form exists;
     return;
   }
+
+  await exports.insertMarketingData(email, cookieKeyData.timestamp/1000.);
 
   // encrypt the IP in the cookie key data
   if (cookieKeyData.ip_encrypted === undefined) {
@@ -150,16 +152,24 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   await datastore.delete(cookieKey);
 };
 
-exports.insertMarketingData = async email => {
+
+/*
+email is user's email.
+timestamp is the time that the user submitted the form, in UTC Unix time in sec since origin.
+ */
+exports.insertMarketingData = async (email, timestamp) => {
   const key = datastore.key({
     path: [process.env.DATASTORE_KIND_MARKETING, email],
     namespace: process.env.DATASTORE_NAMESPACE
   });
 
-  var timestamp = moment
-    .utc()
-    .startOf("day")
-    .unix();
+  if (timestamp === undefined) {
+    timestamp = moment
+        .utc()
+        .startOf("day")
+        .unix();
+  }
+  timestamp = Math.round(timestamp);
 
   try {
     // Try to insert an object with hashed email as key. If already submitted, fails
