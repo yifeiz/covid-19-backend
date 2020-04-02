@@ -5,14 +5,6 @@ const kms = require("./kms.js");
 
 const datastore = new Datastore();
 
-// max number of chars allowed in a google cloud datastore key - hashed IDs are longer
-const encrypt_ip_substring_chars = 63;
-
-// truncates IDs from the datastore into keys that can be used to encrypt parts of each document
-function keyFromId(id) {
-  return id.substring(0, encrypt_ip_substring_chars);
-}
-
 // Encrypts the Ip address in data, storing the cypher text in a different field
 async function encryptIp(data) {
   data.ip_encrypted = await kms.encrypt(
@@ -124,20 +116,13 @@ exports.migrateCookieForm = async (hashedUserID, cookie_id) => {
   if (!cookieKeyData) {
     // No cookieKey form exists;
     return;
-  } else if (!(cookieKeyData.ip_encrypted === undefined)) {
-    // if ip address already encrypted, we need to decrypt
-    try {
-      cookieKeyData.ip_address = await kms.decrypt(
-        process.env.SECRETS_KEYRING,
-        cookieKeyData.IP_KEY,
-        cookieKeyData.ip_encrypted
-      );
-    } catch (e) {
-      console.log(e);
-    }
   }
-  // hash the ip with the new id
-  await encryptIp(cookieKeyData);
+
+  // encrypt the IP in the cookie key data
+  if (cookieKeyData.ip_encrypted === undefined) {
+    // hash the ip with the new id
+    await encryptIp(cookieKeyData);
+  }
 
   delete cookieKeyData.cookie_id; //Deletes old cookie_id field, no longer needed as express-session cookies are used
   try {
