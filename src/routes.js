@@ -176,6 +176,7 @@ router.post("/login", async (req, res) => {
 
   const client = new OAuth2Client(oauth_client_id);
   let userID = null;
+  let userEmail = null;
   async function verify() {
     const ticket = await client.verifyIdToken({
       idToken: req.body.tokenId,
@@ -183,6 +184,7 @@ router.post("/login", async (req, res) => {
     });
     const payload = ticket.getPayload();
     userID = payload["sub"]; //sub is the user's unique google ID
+    userEmail = payload["email"]; //email is the user's email...
   }
 
   try {
@@ -216,7 +218,8 @@ router.post("/login", async (req, res) => {
         }
         await googleData.migrateCookieForm(
           derivedKey.toString("hex"),
-          cookie_id
+          cookie_id,
+          userEmail
         );
       }
     );
