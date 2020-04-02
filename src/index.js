@@ -13,7 +13,15 @@ const googleData = require("./dataStore");
 const port = process.env.PORT || 80;
 const app = express();
 
-app.use(cors({ origin: `https://${process.env.DOMAIN}`, credentials: true }));
+app.use(
+  cors({
+    origin: [
+      `https://${process.env.DOMAIN}`,
+      `https://fr.${process.env.DOMAIN}`
+    ],
+    credentials: true
+  })
+);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
@@ -38,13 +46,25 @@ app.post("/submit", async (req, res) => {
     return;
   }
 
-  const form_response_fields = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'postalCode'];
-  const form_responses = form_response_fields.reduce((obj, field) => ({ 
-    ...obj, 
-    [field]: req.body[field]
-  }), {});
+  const form_response_fields = [
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6",
+    "q7",
+    "postalCode"
+  ];
+  const form_responses = form_response_fields.reduce(
+    (obj, field) => ({
+      ...obj,
+      [field]: req.body[field]
+    }),
+    {}
+  );
 
-  const timestamp = Date.now()
+  const timestamp = Date.now();
   const submission = {
     timestamp,
     ip_address: requestIp.getClientIp(req),
@@ -66,9 +86,13 @@ app.post("/submit", async (req, res) => {
       httpOnly: true,
       maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
       secure: true,
-      signed: true,
+      signed: true
     };
-    res.cookie("userCookieValue", submission.cookie_id, submission_cookie_options);
+    res.cookie(
+      "userCookieValue",
+      submission.cookie_id,
+      submission_cookie_options
+    );
   }
 
   // inserts/updates entity in dataStore
